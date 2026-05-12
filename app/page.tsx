@@ -32,30 +32,15 @@ type Word = {
   }[];
 };
 
-type VocabResponse = {
+type StaticVocabData = {
+  generated_at?: string;
   kanji: Kanji[];
   words: Word[];
-  selectedKanji: Kanji | null;
-  totalWords: number;
-  totalShown: number;
-  limit: number;
-  offset: number;
-  detailFilter?: DetailFilter;
 };
 
 const PAGE_SIZE = 100;
 const GROUP_SIZE_OPTIONS = [25, 50, 100, 200];
 const DEFAULT_WORD_VISIBLE = true;
-
-const initialData: VocabResponse = {
-  kanji: [],
-  words: [],
-  selectedKanji: null,
-  totalWords: 0,
-  totalShown: 0,
-  limit: PAGE_SIZE,
-  offset: 0,
-};
 
 const filterOptions: { label: string; value: DetailFilter }[] = [
   { label: "전체", value: "all" },
@@ -71,6 +56,8 @@ const memoryModeOptions: { label: string; value: MemoryMode }[] = [
   { label: "전체 숨기기", value: "hide_all" },
 ];
 
+const staticDataPath = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/vocab-static.json`;
+
 function shuffleWords(words: Word[]) {
   const shuffled = [...words];
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
@@ -80,8 +67,47 @@ function shuffleWords(words: Word[]) {
   return shuffled;
 }
 
+function seededHash(value: string) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function matchesSearch(word: Word, keyword: string) {
+  if (!keyword) return true;
+  const target = keyword.toLocaleLowerCase("ko-KR");
+  const fields = [
+    word.word,
+    word.reading_hiragana ?? "",
+    word.meaning_ko ?? "",
+    ...word.kanji.flatMap((kanji) => [
+      kanji.character,
+      kanji.korean_name ?? "",
+    ]),
+  ];
+
+  return fields.some((field) => field.toLocaleLowerCase("ko-KR").includes(target));
+}
+
+function matchesDetailFilter(word: Word, detailFilter: DetailFilter) {
+  if (detailFilter === "missing_reading") return !word.reading_hiragana;
+  if (detailFilter === "missing_meaning") return !word.meaning_ko;
+  return true;
+}
+
+function matchesKanji(word: Word, selectedKanji: string) {
+  if (!selectedKanji) return true;
+  return word.kanji.some((kanji) => kanji.character === selectedKanji);
+}
+
 export default function Home() {
-  const [data, setData] = useState<VocabResponse>(initialData);
+  const [staticData, setStaticData] = useState<StaticVocabData>({
+    kanji: [],
+    words: [],
+  });
   const [search, setSearch] = useState("");
   const [kanjiSearch, setKanjiSearch] = useState("");
   const [selectedKanji, setSelectedKanji] = useState("");
@@ -89,6 +115,7 @@ export default function Home() {
   const [offset, setOffset] = useState(0);
   const [groupSize, setGroupSize] = useState(PAGE_SIZE);
   const [shuffleSeed, setShuffleSeed] = useState("");
+  const [currentGroupOrder, setCurrentGroupOrder] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [memoryMode, setMemoryMode] = useState<MemoryMode>("word_only");
@@ -98,73 +125,99 @@ export default function Home() {
   const [kanjiPopup, setKanjiPopup] = useState<Word["kanji"][number] | null>(null);
 
   useEffect(() => {
-    setOffset(0);
-    setData(initialData);
-    setRevealedCells(new Set());
-  }, [search, selectedKanji, detailFilter, groupSize, shuffleSeed]);
-
-  useEffect(() => {
     const controller = new AbortController();
-    let ignore = false;
-    const requestTimeout = window.setTimeout(() => {
-      controller.abort();
-    }, 12000);
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      setError("");
 
-      const params = new URLSearchParams();
-      params.set("limit", String(groupSize));
-      params.set("offset", String(offset));
-      params.set("detail", detailFilter);
-      if (shuffleSeed) params.set("shuffleSeed", shuffleSeed);
-      if (search.trim()) params.set("search", search.trim());
-      if (selectedKanji) params.set("kanji", selectedKanji);
-
+    async function loadStaticData() {
       try {
-        const response = await fetch(`/api/vocab?${params.toString()}`, {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(staticDataPath, {
+          cache: "no-store",
           signal: controller.signal,
         });
-        const payload = await response.json().catch(() => null);
 
         if (!response.ok) {
-          const apiMessage =
-            payload?.detail || payload?.error || `API 오류 (${response.status})`;
-          throw new Error(apiMessage);
+          throw new Error(`정적 단어장 JSON을 불러오지 못했습니다. (${response.status})`);
         }
 
-        if (!ignore) {
-          setData(payload);
-        }
+        const payload = (await response.json()) as StaticVocabData;
+        setStaticData({
+          generated_at: payload.generated_at,
+          kanji: payload.kanji ?? [],
+          words: payload.words ?? [],
+        });
       } catch (err) {
-        if (ignore) return;
-
-        const message =
-          err instanceof DOMException && err.name === "AbortError"
-            ? "API 응답 시간이 초과되었습니다. 개발 서버를 재시작하거나 DB 연결을 확인해 주세요."
-            : err instanceof Error
-              ? err.message
-              : "알 수 없는 오류가 발생했습니다.";
-
-        setError(message);
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
       } finally {
-        if (!ignore) setLoading(false);
-        window.clearTimeout(requestTimeout);
+        setLoading(false);
       }
-    }, 180);
+    }
+
+    loadStaticData();
 
     return () => {
-      clearTimeout(timer);
-      window.clearTimeout(requestTimeout);
-      ignore = true;
       controller.abort();
     };
-  }, [search, selectedKanji, detailFilter, groupSize, shuffleSeed, offset]);
+  }, []);
 
-  const selectedLabel = useMemo(() => {
-    if (!data.selectedKanji) return "전체 한자";
-    return `${data.selectedKanji.character} ${data.selectedKanji.korean_name ?? "이름 미등록"}`;
-  }, [data.selectedKanji]);
+  useEffect(() => {
+    setOffset(0);
+    setRevealedCells(new Set());
+    setCurrentGroupOrder([]);
+  }, [search, selectedKanji, detailFilter, groupSize, shuffleSeed]);
+
+  const filteredWords = useMemo(() => {
+    const keyword = search.trim();
+    let words = staticData.words.filter(
+      (word) =>
+        matchesSearch(word, keyword) &&
+        matchesKanji(word, selectedKanji) &&
+        matchesDetailFilter(word, detailFilter),
+    );
+
+    if (shuffleSeed) {
+      words = [...words].sort((left, right) => {
+        const leftHash = seededHash(`${left.id}:${shuffleSeed}`);
+        const rightHash = seededHash(`${right.id}:${shuffleSeed}`);
+        return leftHash - rightHash || left.word.localeCompare(right.word, "ja");
+      });
+    }
+
+    return words;
+  }, [detailFilter, search, selectedKanji, shuffleSeed, staticData.words]);
+
+  const pageWordsRaw = useMemo(
+    () => filteredWords.slice(offset, offset + groupSize),
+    [filteredWords, groupSize, offset],
+  );
+
+  const pageWords = useMemo(() => {
+    if (currentGroupOrder.length === 0) return pageWordsRaw;
+
+    const wordById = new Map(pageWordsRaw.map((word) => [word.id, word]));
+    const ordered = currentGroupOrder
+      .map((id) => wordById.get(id))
+      .filter((word): word is Word => Boolean(word));
+    const orderedIds = new Set(ordered.map((word) => word.id));
+    const missing = pageWordsRaw.filter((word) => !orderedIds.has(word.id));
+
+    return [...ordered, ...missing];
+  }, [currentGroupOrder, pageWordsRaw]);
+
+  const selectedKanjiInfo = useMemo(() => {
+    if (!selectedKanji) return null;
+    return (
+      staticData.kanji.find((kanji) => kanji.character === selectedKanji) ?? null
+    );
+  }, [selectedKanji, staticData.kanji]);
+
+  const selectedLabel = selectedKanjiInfo
+    ? `${selectedKanjiInfo.character} ${
+        selectedKanjiInfo.korean_name ?? "이름 미등록"
+      }`
+    : "전체 한자";
 
   const filterLabel =
     filterOptions.find((option) => option.value === detailFilter)?.label ?? "전체";
@@ -173,43 +226,44 @@ export default function Home() {
 
   const filteredKanji = useMemo(() => {
     const keyword = kanjiSearch.trim();
-    if (!keyword) return data.kanji;
+    if (!keyword) return staticData.kanji;
 
-    return data.kanji.filter((item) => {
+    return staticData.kanji.filter((item) => {
       const name = item.korean_name ?? "";
       return item.character.includes(keyword) || name.includes(keyword);
     });
-  }, [data.kanji, kanjiSearch]);
+  }, [kanjiSearch, staticData.kanji]);
 
   const visibleWords = useMemo(() => {
-    if (!hideCompleted) return data.words;
-    return data.words.filter((word) => !completedWords.has(word.id));
-  }, [completedWords, data.words, hideCompleted]);
+    if (!hideCompleted) return pageWords;
+    return pageWords.filter((word) => !completedWords.has(word.id));
+  }, [completedWords, hideCompleted, pageWords]);
 
   const kanjiProgress = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const word of data.words) {
+    for (const word of staticData.words) {
       if (!completedWords.has(word.id)) continue;
       for (const kanji of word.kanji) {
         counts.set(kanji.character, (counts.get(kanji.character) ?? 0) + 1);
       }
     }
     return counts;
-  }, [completedWords, data.words]);
+  }, [completedWords, staticData.words]);
 
-  const completedShownCount = data.words.filter((word) =>
+  const completedShownCount = pageWords.filter((word) =>
     completedWords.has(word.id),
   ).length;
+  const totalWords = filteredWords.length;
   const hasPreviousGroup = offset > 0;
-  const hasNextGroup = offset + data.words.length < data.totalWords;
+  const hasNextGroup = offset + pageWords.length < totalWords;
   const groupIndex = Math.floor(offset / groupSize) + 1;
-  const totalGroups = Math.max(1, Math.ceil(data.totalWords / groupSize));
-  const groupStart = data.totalWords === 0 ? 0 : offset + 1;
-  const groupEnd = Math.min(offset + data.words.length, data.totalWords);
+  const totalGroups = Math.max(1, Math.ceil(totalWords / groupSize));
+  const groupStart = totalWords === 0 ? 0 : offset + 1;
+  const groupEnd = Math.min(offset + pageWords.length, totalWords);
   const countLabel =
-    loading && data.words.length === 0
+    loading && pageWords.length === 0
       ? "조회 중"
-      : `${groupStart.toLocaleString()}-${groupEnd.toLocaleString()} / ${data.totalWords.toLocaleString()}개`;
+      : `${groupStart.toLocaleString()}-${groupEnd.toLocaleString()} / ${totalWords.toLocaleString()}개`;
   const visibleCountLabel = hideCompleted
     ? `${visibleWords.length.toLocaleString()}개 학습 중`
     : countLabel;
@@ -222,6 +276,7 @@ export default function Home() {
     setOffset(0);
     setGroupSize(PAGE_SIZE);
     setShuffleSeed("");
+    setCurrentGroupOrder([]);
     setRevealedCells(new Set());
     setMemoryMode("word_only");
     setHideCompleted(false);
@@ -231,9 +286,11 @@ export default function Home() {
   function moveGroup(direction: "previous" | "next") {
     setKanjiPopup(null);
     setRevealedCells(new Set());
+    setCurrentGroupOrder([]);
     setOffset((current) => {
       const next = direction === "next" ? current + groupSize : current - groupSize;
-      return Math.max(0, Math.min(next, Math.max(0, data.totalWords - 1)));
+      const maxOffset = Math.max(0, (totalGroups - 1) * groupSize);
+      return Math.max(0, Math.min(next, maxOffset));
     });
   }
 
@@ -244,10 +301,7 @@ export default function Home() {
   }
 
   function shuffleCurrentGroup() {
-    setData((current) => ({
-      ...current,
-      words: shuffleWords(current.words),
-    }));
+    setCurrentGroupOrder(shuffleWords(pageWords).map((word) => word.id));
     setKanjiPopup(null);
   }
 
@@ -260,7 +314,7 @@ export default function Home() {
   function applyMemoryMode(mode: MemoryMode) {
     const next = new Set<string>();
 
-    for (const word of data.words) {
+    for (const word of pageWords) {
       if (!DEFAULT_WORD_VISIBLE || mode === "hide_all") {
         if (mode !== "hide_all") next.add(`${word.id}:word`);
       }
@@ -318,9 +372,9 @@ export default function Home() {
     <main className="shell">
       <section className="appHeader">
         <div className="titleBlock">
-          <p className="eyebrow">Neon PostgreSQL / JLPT N1</p>
+          <p className="eyebrow">GitHub Pages / JLPT N1</p>
           <h1>한자 기반 일본어 단어장</h1>
-          <p className="subtitle">JLPT N1 / 한자별 단어 학습</p>
+          <p className="subtitle">정적 JSON / 한자별 단어 학습</p>
         </div>
 
         <label className="searchBox primarySearch">
@@ -480,11 +534,11 @@ export default function Home() {
 
             <div className="selectedKanjiCard">
               <span>선택 한자</span>
-              {data.selectedKanji ? (
+              {selectedKanjiInfo ? (
                 <strong>
-                  {data.selectedKanji.character} /{" "}
-                  {data.selectedKanji.korean_name ?? "이름 미등록"} /{" "}
-                  {data.selectedKanji.word_count.toLocaleString()}개
+                  {selectedKanjiInfo.character} /{" "}
+                  {selectedKanjiInfo.korean_name ?? "이름 미등록"} /{" "}
+                  {selectedKanjiInfo.word_count.toLocaleString()}개
                 </strong>
               ) : (
                 <strong>없음 / 전체 단어 보기</strong>
@@ -551,10 +605,10 @@ export default function Home() {
           </div>
 
           {error ? <div className="notice error">{error}</div> : null}
-          {!error && !loading && data.words.length === 0 ? (
+          {!error && !loading && pageWords.length === 0 ? (
             <div className="notice">검색 결과가 없습니다.</div>
           ) : null}
-          {!error && !loading && data.words.length > 0 && visibleWords.length === 0 ? (
+          {!error && !loading && pageWords.length > 0 && visibleWords.length === 0 ? (
             <div className="notice">완료 숨기기 상태에서 표시할 단어가 없습니다.</div>
           ) : null}
 

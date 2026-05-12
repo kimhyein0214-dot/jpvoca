@@ -67,16 +67,16 @@ python -c "import os, psycopg; from dotenv import load_dotenv; load_dotenv(); sq
 
 ## Web App
 
-This folder also contains a Next.js web app for browsing the imported `jp_vocab_` tables.
+This folder also contains a Next.js web app for browsing the exported vocabulary JSON.
 
 ### Features
 
-- Lists vocabulary from `jp_vocab_words`.
-- Shows kanji per word from `jp_vocab_word_kanji` and `jp_vocab_kanji`.
+- Lists vocabulary exported from `jp_vocab_words`.
+- Shows kanji per word exported from `jp_vocab_word_kanji` and `jp_vocab_kanji`.
 - Filters words by clicked kanji.
 - Displays `korean_name` for the selected kanji.
 - Searches word, kanji, hiragana reading, Korean meaning, and kanji Korean name.
-- Keeps `DATABASE_URL` in server-only code through `app/api/vocab/route.ts`.
+- Uses `public/vocab-static.json` in the browser, so GitHub Pages can host it without a server.
 - Displays `읽기 미등록` and `뜻 미등록` when database values are `NULL`.
 
 ### Install and Run
@@ -111,7 +111,51 @@ Open:
 http://localhost:3000
 ```
 
-The app reads `DATABASE_URL` from `.env` on the server side. Do not rename it to `NEXT_PUBLIC_DATABASE_URL`.
+The local app reads `public/vocab-static.json`. If the database changes, regenerate that JSON before deploying.
+
+## Export Static Vocabulary JSON
+
+Use `export_static_vocab.py` to export the current Neon PostgreSQL vocabulary into a browser-readable JSON file.
+
+Output file:
+
+```text
+public/vocab-static.json
+```
+
+Run:
+
+```powershell
+python export_static_vocab.py
+```
+
+Behavior:
+
+- Reads `DATABASE_URL` from `.env`.
+- Exports all words and kanji into one JSON file.
+- The deployed GitHub Pages app reads only this JSON file.
+- `DATABASE_URL` is not included in the deployed site.
+
+## Deploy To GitHub Pages
+
+This app is configured for static GitHub Pages deployment. It does not need Netlify, Vercel, or a server API.
+
+The repository includes `.github/workflows/pages.yml`.
+
+In GitHub:
+
+1. Open the repository settings.
+2. Go to `Pages`.
+3. Set `Source` to `GitHub Actions`.
+4. Push to the `main` branch.
+
+The workflow builds with `GITHUB_PAGES=true`, exports the static site into `out`, and deploys it.
+
+Public URL format:
+
+```text
+https://<github-user>.github.io/jpvoca/
+```
 
 ## Update Word Details From CSV
 
