@@ -41,6 +41,15 @@ type StaticVocabData = {
 const PAGE_SIZE = 100;
 const GROUP_SIZE_OPTIONS = [25, 50, 100, 200];
 const DEFAULT_WORD_VISIBLE = true;
+const STORAGE_KEY = "jp-vocab-study-state-v1";
+
+type StoredStudyState = {
+  completedWordIds?: number[];
+  hideCompleted?: boolean;
+  groupSize?: number;
+  memoryMode?: MemoryMode;
+  detailFilter?: DetailFilter;
+};
 
 const filterOptions: { label: string; value: DetailFilter }[] = [
   { label: "전체", value: "all" },
@@ -123,6 +132,7 @@ export default function Home() {
   const [completedWords, setCompletedWords] = useState<Set<number>>(new Set());
   const [hideCompleted, setHideCompleted] = useState(false);
   const [kanjiPopup, setKanjiPopup] = useState<Word["kanji"][number] | null>(null);
+  const [storageReady, setStorageReady] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -161,6 +171,72 @@ export default function Home() {
       controller.abort();
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const rawState = window.localStorage.getItem(STORAGE_KEY);
+      if (rawState) {
+        const savedState = JSON.parse(rawState) as StoredStudyState;
+
+        if (Array.isArray(savedState.completedWordIds)) {
+          setCompletedWords(
+            new Set(
+              savedState.completedWordIds.filter((id) => Number.isInteger(id)),
+            ),
+          );
+        }
+        if (typeof savedState.hideCompleted === "boolean") {
+          setHideCompleted(savedState.hideCompleted);
+        }
+        if (
+          typeof savedState.groupSize === "number" &&
+          Number.isFinite(savedState.groupSize)
+        ) {
+          setGroupSize(Math.max(10, Math.min(200, savedState.groupSize)));
+        }
+        if (
+          savedState.memoryMode === "word_only" ||
+          savedState.memoryMode === "word_reading" ||
+          savedState.memoryMode === "word_meaning" ||
+          savedState.memoryMode === "show_all" ||
+          savedState.memoryMode === "hide_all"
+        ) {
+          setMemoryMode(savedState.memoryMode);
+        }
+        if (
+          savedState.detailFilter === "all" ||
+          savedState.detailFilter === "missing_reading" ||
+          savedState.detailFilter === "missing_meaning"
+        ) {
+          setDetailFilter(savedState.detailFilter);
+        }
+      }
+    } catch (err) {
+      console.warn("학습 기록을 불러오지 못했습니다.", err);
+    } finally {
+      setStorageReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!storageReady || typeof window === "undefined") return;
+
+    const savedState: StoredStudyState = {
+      completedWordIds: [...completedWords],
+      hideCompleted,
+      groupSize,
+      memoryMode,
+      detailFilter,
+    };
+
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
+    } catch (err) {
+      console.warn("학습 기록을 저장하지 못했습니다.", err);
+    }
+  }, [completedWords, detailFilter, groupSize, hideCompleted, memoryMode, storageReady]);
 
   useEffect(() => {
     setOffset(0);
