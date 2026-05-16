@@ -277,11 +277,13 @@ h2 {
 .kanjiPanel {
   position: sticky;
   top: 16px;
+  min-width: 0;
   max-height: calc(100vh - 32px);
   overflow: hidden;
 }
 
 .wordPanel {
+  min-width: 0;
   min-height: 70vh;
 }
 
@@ -833,15 +835,15 @@ h2 {
 
 @media (max-width: 560px) {
   .shell {
-    padding: 10px;
+    padding: 8px;
   }
 
   .appHeader {
-    padding: 14px;
+    padding: 12px;
   }
 
   h1 {
-    font-size: 34px;
+    font-size: 26px;
   }
 
   .panelHeader {
@@ -871,5 +873,371 @@ h2 {
   .kanjiPopup {
     right: 10px;
     bottom: 10px;
+  }
+}
+
+@media (max-width: 700px) {
+  body {
+    background: var(--background);
+  }
+
+  .shell {
+    width: 100%;
+    padding: 8px;
+  }
+
+  .appHeader,
+  .controlPanel,
+  .batchPanel,
+  .kanjiPanel,
+  .wordPanel {
+    border-radius: 7px;
+    box-shadow: 0 8px 20px rgba(35, 45, 39, 0.08);
+  }
+
+  .appHeader {
+    gap: 12px;
+    margin-bottom: 8px;
+    padding: 12px;
+  }
+
+  .titleBlock {
+    gap: 4px;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+  }
+
+  h1 {
+    font-size: 25px;
+    line-height: 1.15;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
+
+  .primarySearch input {
+    height: 48px;
+    padding: 0 12px;
+    font-size: 15px;
+  }
+
+  .controlPanel {
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 8px;
+  }
+
+  .controlGroup,
+  .batchControl {
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .segmentedControl,
+  .toolRow,
+  .batchSizeRow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .memoryGroup .segmentedControl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .segmentedControl button,
+  .toolButton,
+  .batchSizeRow button,
+  .batchSizeRow label,
+  .ghostButton,
+  .countBadge {
+    justify-content: center;
+    min-height: 40px;
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .batchPanel {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 8px;
+  }
+
+  .batchSizeRow label {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+
+  .batchSizeRow input {
+    width: min(120px, 45%);
+    height: 34px;
+  }
+
+  .batchPager,
+  .footerPager {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    width: 100%;
+  }
+
+  .batchPager .toolButton,
+  .footerPager .toolButton,
+  .footerPager .loadMoreButton {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .kanjiPanel {
+    width: 100%;
+    max-height: none;
+  }
+
+  .panelHeader {
+    flex-direction: row;
+    align-items: center;
+    padding: 11px 12px;
+  }
+
+  .wordHeader {
+    gap: 8px;
+  }
+
+  .wordHeader .countBadge {
+    align-self: flex-start;
+  }
+
+  .sidebarTools {
+    gap: 8px;
+    padding: 9px;
+  }
+
+  .kanjiSearchBox input {
+    height: 38px;
+  }
+
+  .selectedKanjiCard {
+    padding: 8px 10px;
+  }
+
+  .kanjiList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 230px;
+    width: 100%;
+    padding: 7px;
+  }
+
+  .kanjiItem {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 7px;
+    padding: 6px;
+  }
+
+  .kanjiChar {
+    width: 38px;
+    height: 38px;
+    font-size: 23px;
+  }
+
+  .kanjiMeta strong {
+    font-size: 13px;
+  }
+
+  .kanjiMeta small {
+    font-size: 11px;
+  }
+
+  .stateBar {
+    gap: 5px;
+    margin: 9px 10px;
+    padding: 7px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .stateChip {
+    min-height: 26px;
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+
+  .studyTableWrap {
+    overflow: visible;
+    margin: 0 10px;
+    border: 0;
+    background: transparent;
+  }
+
+  .studyTable {
+    display: block;
+    min-width: 0;
+  }
+
+  .studyTable thead {
+    display: none;
+  }
+
+  .studyTable tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  .studyTable tbody tr,
+  .studyTable tbody tr:nth-child(even) {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+    grid-template-areas:
+      "complete word audio"
+      "reading reading reading"
+      "meaning meaning meaning"
+      "kanji kanji kanji";
+    gap: 7px 8px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-strong);
+    padding: 9px;
+  }
+
+  .studyTable tbody tr:hover {
+    background: var(--surface-strong);
+  }
+
+  .studyTable td {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+    border: 0;
+    padding: 0;
+  }
+
+  .studyTable td::before {
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .studyTable td:nth-child(1) {
+    grid-area: complete;
+    display: grid;
+    place-items: center;
+  }
+
+  .studyTable td:nth-child(1)::before,
+  .studyTable td:nth-child(2)::before,
+  .studyTable td:nth-child(6)::before {
+    display: none;
+  }
+
+  .studyTable td:nth-child(2) {
+    grid-area: word;
+    display: block;
+  }
+
+  .studyTable td:nth-child(3) {
+    grid-area: reading;
+  }
+
+  .studyTable td:nth-child(3)::before {
+    content: "읽기";
+  }
+
+  .studyTable td:nth-child(4) {
+    grid-area: meaning;
+  }
+
+  .studyTable td:nth-child(4)::before {
+    content: "뜻";
+  }
+
+  .studyTable td:nth-child(5) {
+    grid-area: kanji;
+  }
+
+  .studyTable td:nth-child(5)::before {
+    content: "한자";
+  }
+
+  .studyTable td:nth-child(6) {
+    grid-area: audio;
+    display: grid;
+    place-items: center;
+  }
+
+  .completeCol,
+  .audioCol,
+  .wordCol {
+    width: auto;
+  }
+
+  .completeCol input {
+    width: 22px;
+    height: 22px;
+  }
+
+  .memoryCell {
+    min-height: 36px;
+    padding: 4px 6px;
+  }
+
+  .wordCell {
+    font-size: 29px;
+  }
+
+  .readingCell,
+  .meaningCell {
+    font-size: 15px;
+  }
+
+  .hiddenPrompt {
+    min-height: 30px;
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .inlineKanji {
+    gap: 5px;
+  }
+
+  .inlineKanji button,
+  .audioButton {
+    min-width: 34px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .tableFooter {
+    display: grid;
+    gap: 10px;
+    padding: 12px 10px 0;
+  }
+
+  .footerPager {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .kanjiPopup {
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    grid-template-columns: 1fr;
+    width: auto;
+  }
+
+  .kanjiPopupClose {
+    min-height: 38px;
   }
 }
