@@ -347,13 +347,9 @@ export default function Home() {
     return counts;
   }, [completedWords, staticData.words]);
 
-  const masteredKanjiCount = useMemo(
-    () =>
-      staticData.kanji.filter((kanji) => {
-        const completedCount = kanjiProgress.get(kanji.character) ?? 0;
-        return kanji.word_count > 0 && completedCount >= kanji.word_count;
-      }).length,
-    [kanjiProgress, staticData.kanji],
+  const completedWordTotal = useMemo(
+    () => staticData.words.filter((word) => completedWords.has(word.id)).length,
+    [completedWords, staticData.words],
   );
 
   const completedShownCount = pageWords.filter((word) =>
@@ -905,13 +901,13 @@ export default function Home() {
             </label>
           </div>
         </div>
-        <div className="kanjiSummaryCard" aria-label="전체 한자 암기 현황">
-          <span className="groupLabel">한자 완료</span>
+        <div className="kanjiSummaryCard" aria-label="전체 단어 완료 현황">
+          <span className="groupLabel">단어 완료</span>
           <strong>
-            {masteredKanjiCount.toLocaleString()} /{" "}
-            {staticData.kanji.length.toLocaleString()}자
+            {completedWordTotal.toLocaleString()} /{" "}
+            {staticData.words.length.toLocaleString()}개
           </strong>
-          <small>포함 단어를 모두 체크한 한자 기준</small>
+          <small>전체 단어 기준 완료 체크 수</small>
         </div>
         <div className="batchPager">
           <button
