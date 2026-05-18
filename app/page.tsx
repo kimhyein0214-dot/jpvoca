@@ -347,6 +347,15 @@ export default function Home() {
     return counts;
   }, [completedWords, staticData.words]);
 
+  const masteredKanjiCount = useMemo(
+    () =>
+      staticData.kanji.filter((kanji) => {
+        const completedCount = kanjiProgress.get(kanji.character) ?? 0;
+        return kanji.word_count > 0 && completedCount >= kanji.word_count;
+      }).length,
+    [kanjiProgress, staticData.kanji],
+  );
+
   const completedShownCount = pageWords.filter((word) =>
     completedWords.has(word.id),
   ).length;
@@ -896,6 +905,14 @@ export default function Home() {
             </label>
           </div>
         </div>
+        <div className="kanjiSummaryCard" aria-label="전체 한자 암기 현황">
+          <span className="groupLabel">한자 완료</span>
+          <strong>
+            {masteredKanjiCount.toLocaleString()} /{" "}
+            {staticData.kanji.length.toLocaleString()}자
+          </strong>
+          <small>포함 단어를 모두 체크한 한자 기준</small>
+        </div>
         <div className="batchPager">
           <button
             className="toolButton secondary"
@@ -974,6 +991,10 @@ export default function Home() {
                     selectedKanji === item.character ? "active" : ""
                   } ${
                     activeKanjiCharacter === item.character ? "keyboardActive" : ""
+                  } ${
+                    item.word_count > 0 && completedCount >= item.word_count
+                      ? "completed"
+                      : ""
                   }`}
                   type="button"
                   onClick={() => {
@@ -1177,22 +1198,23 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="shortcutPanel" aria-label="데스크탑 단축키 안내">
-            <div>
-              <p className="eyebrow">Keyboard</p>
-              <h3>데스크탑 단축키</h3>
-            </div>
-            <div className="shortcutGrid">
-              {shortcutHelp.map((shortcut) => (
-                <span className="shortcutItem" key={shortcut.key}>
-                  <kbd>{shortcut.key}</kbd>
-                  {shortcut.label}
-                </span>
-              ))}
-            </div>
-          </div>
         </section>
       </section>
+
+      <aside className="shortcutPanel" aria-label="데스크탑 단축키 안내">
+        <div className="shortcutTitle">
+          <p className="eyebrow">Keyboard</p>
+          <h3>데스크탑 단축키</h3>
+        </div>
+        <div className="shortcutGrid">
+          {shortcutHelp.map((shortcut) => (
+            <span className="shortcutItem" key={shortcut.key}>
+              <kbd>{shortcut.key}</kbd>
+              {shortcut.label}
+            </span>
+          ))}
+        </div>
+      </aside>
 
       {kanjiPopup ? (
         <div className="kanjiPopup" role="dialog" aria-label="한자 정보">
