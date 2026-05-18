@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type DetailFilter = "all" | "missing_reading" | "missing_meaning";
+type KeyboardScope = "words" | "kanji";
 type MemoryMode =
   | "word_only"
   | "word_reading"
@@ -67,10 +68,12 @@ const memoryModeOptions: { label: string; value: MemoryMode }[] = [
 
 const shortcutHelp = [
   { key: "/", label: "검색" },
+  { key: "Tab", label: "단어/한자 전환" },
+  { key: "↑/↓", label: "선택 이동" },
   { key: "J/K", label: "단어 이동" },
   { key: "R", label: "읽기 보기" },
   { key: "M", label: "뜻 보기" },
-  { key: "Enter", label: "완료 체크" },
+  { key: "Enter", label: "완료/한자 선택" },
   { key: "←/→", label: "이전/다음 조" },
   { key: "1-5", label: "암기 모드" },
   { key: "S", label: "현재 조 셔플" },
@@ -149,6 +152,8 @@ export default function Home() {
   const [kanjiPopup, setKanjiPopup] = useState<Word["kanji"][number] | null>(null);
   const [storageReady, setStorageReady] = useState(false);
   const [activeWordId, setActiveWordId] = useState<number | null>(null);
+  const [activeKanjiCharacter, setActiveKanjiCharacter] = useState<string | null>(null);
+  const [keyboardScope, setKeyboardScope] = useState<KeyboardScope>("words");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -372,6 +377,28 @@ export default function Home() {
   }, [activeWordId, visibleWords]);
 
   useEffect(() => {
+    if (filteredKanji.length === 0) {
+      setActiveKanjiCharacter(null);
+      return;
+    }
+
+    if (
+      selectedKanji &&
+      filteredKanji.some((kanji) => kanji.character === selectedKanji)
+    ) {
+      setActiveKanjiCharacter(selectedKanji);
+      return;
+    }
+
+    if (
+      !activeKanjiCharacter ||
+      !filteredKanji.some((kanji) => kanji.character === activeKanjiCharacter)
+    ) {
+      setActiveKanjiCharacter(filteredKanji[0].character);
+    }
+  }, [activeKanjiCharacter, filteredKanji, selectedKanji]);
+
+  useEffect(() => {
     function isTypingTarget(target: EventTarget | null) {
       if (!(target instanceof HTMLElement)) return false;
       const tagName = target.tagName.toLowerCase();
@@ -435,14 +462,33 @@ export default function Home() {
         return;
       }
 
+      if (event.key === "Tab") {
+        event.preventDefault();
+        setKeyboardScope((current) => (current === "words" ? "kanji" : "words"));
+        setKanjiPopup(null);
+        return;
+      }
+
       if (event.key === "Escape") {
         event.preventDefault();
         setKanjiPopup(null);
         return;
       }
 
-      if (key === "j" || event.key === "ArrowDown") {
+      if (event.key === "ArrowDown") {
         event.preventDefault();
+        if (keyboardScope === "kanji") {
+          if (filteredKanji.length === 0) return;
+          const currentIndex = Math.max(
+            0,
+            filteredKanji.findIndex(
+              (kanji) => kanji.character === activeKanjiCharacter,
+            ),
+          );
+          const nextIndex = Math.min(filteredKanji.length - 1, currentIndex + 1);
+          setActiveKanjiCharacter(filteredKanji[nextIndex].character);
+          return;
+        }
         if (visibleWords.length === 0) return;
         const currentIndex = Math.max(
           0,
@@ -453,8 +499,46 @@ export default function Home() {
         return;
       }
 
-      if (key === "k" || event.key === "ArrowUp") {
+      if (event.key === "ArrowUp") {
         event.preventDefault();
+        if (keyboardScope === "kanji") {
+          if (filteredKanji.length === 0) return;
+          const currentIndex = Math.max(
+            0,
+            filteredKanji.findIndex(
+              (kanji) => kanji.character === activeKanjiCharacter,
+            ),
+          );
+          const nextIndex = Math.max(0, currentIndex - 1);
+          setActiveKanjiCharacter(filteredKanji[nextIndex].character);
+          return;
+        }
+        if (visibleWords.length === 0) return;
+        const currentIndex = Math.max(
+          0,
+          visibleWords.findIndex((word) => word.id === activeWordId),
+        );
+        const nextIndex = Math.max(0, currentIndex - 1);
+        setActiveWordId(visibleWords[nextIndex].id);
+        return;
+      }
+
+      if (key === "j") {
+        event.preventDefault();
+        setKeyboardScope("words");
+        if (visibleWords.length === 0) return;
+        const currentIndex = Math.max(
+          0,
+          visibleWords.findIndex((word) => word.id === activeWordId),
+        );
+        const nextIndex = Math.min(visibleWords.length - 1, currentIndex + 1);
+        setActiveWordId(visibleWords[nextIndex].id);
+        return;
+      }
+
+      if (key === "k") {
+        event.preventDefault();
+        setKeyboardScope("words");
         if (visibleWords.length === 0) return;
         const currentIndex = Math.max(
           0,
@@ -497,6 +581,12 @@ export default function Home() {
 
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
+        if (keyboardScope === "kanji") {
+          if (!activeKanjiCharacter) return;
+          setSelectedKanji(activeKanjiCharacter);
+          setKanjiPopup(null);
+          return;
+        }
         if (!activeWordId) return;
         setCompletedWords((current) => {
           const next = new Set(current);
@@ -563,6 +653,7 @@ export default function Home() {
         setMemoryMode("word_only");
         setHideCompleted(false);
         setKanjiPopup(null);
+        setKeyboardScope("words");
         return;
       }
 
@@ -577,9 +668,12 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleShortcut);
   }, [
     activeWordId,
+    activeKanjiCharacter,
+    filteredKanji,
     groupSize,
     hasNextGroup,
     hasPreviousGroup,
+    keyboardScope,
     loading,
     pageWords,
     totalGroups,
@@ -876,9 +970,17 @@ export default function Home() {
               return (
                 <button
                   key={item.id}
-                  className={`kanjiItem ${selectedKanji === item.character ? "active" : ""}`}
+                  className={`kanjiItem ${
+                    selectedKanji === item.character ? "active" : ""
+                  } ${
+                    activeKanjiCharacter === item.character ? "keyboardActive" : ""
+                  }`}
                   type="button"
-                  onClick={() => setSelectedKanji(item.character)}
+                  onClick={() => {
+                    setActiveKanjiCharacter(item.character);
+                    setKeyboardScope("kanji");
+                    setSelectedKanji(item.character);
+                  }}
                   title={item.korean_name ?? "이름 미등록"}
                 >
                   <span className="kanjiChar">{item.character}</span>
@@ -921,6 +1023,9 @@ export default function Home() {
               완료: {completedShownCount.toLocaleString()}개
               {hideCompleted ? " 숨김" : ""}
             </span>
+            <span className={`stateChip ${keyboardScope === "kanji" ? "strong" : ""}`}>
+              키보드: {keyboardScope === "kanji" ? "한자" : "단어"}
+            </span>
           </div>
 
           {error ? <div className="notice error">{error}</div> : null}
@@ -959,7 +1064,10 @@ export default function Home() {
                         isActive ? "activeRow" : ""
                       }`}
                       key={word.id}
-                      onClick={() => setActiveWordId(word.id)}
+                      onClick={() => {
+                        setActiveWordId(word.id);
+                        setKeyboardScope("words");
+                      }}
                     >
                       <td className="completeCol">
                         <input

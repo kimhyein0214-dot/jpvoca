@@ -383,6 +383,11 @@ h2 {
   background: var(--accent-soft);
 }
 
+.kanjiItem.keyboardActive {
+  border-color: var(--accent);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
 .kanjiChar {
   display: grid;
   place-items: center;
