@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type DetailFilter = "all" | "missing_reading" | "missing_meaning";
 type MemoryMode =
@@ -65,6 +65,20 @@ const memoryModeOptions: { label: string; value: MemoryMode }[] = [
   { label: "전체 숨기기", value: "hide_all" },
 ];
 
+const shortcutHelp = [
+  { key: "/", label: "검색" },
+  { key: "J/K", label: "단어 이동" },
+  { key: "R", label: "읽기 보기" },
+  { key: "M", label: "뜻 보기" },
+  { key: "Enter", label: "완료 체크" },
+  { key: "←/→", label: "이전/다음 조" },
+  { key: "1-5", label: "암기 모드" },
+  { key: "S", label: "현재 조 셔플" },
+  { key: "A", label: "전체 셔플" },
+  { key: "H", label: "완료 숨기기" },
+  { key: "Esc", label: "닫기" },
+];
+
 const staticDataPath = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/vocab-static.json`;
 
 function shuffleWords(words: Word[]) {
@@ -113,6 +127,7 @@ function matchesKanji(word: Word, selectedKanji: string) {
 }
 
 export default function Home() {
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [staticData, setStaticData] = useState<StaticVocabData>({
     kanji: [],
     words: [],
@@ -133,6 +148,7 @@ export default function Home() {
   const [hideCompleted, setHideCompleted] = useState(false);
   const [kanjiPopup, setKanjiPopup] = useState<Word["kanji"][number] | null>(null);
   const [storageReady, setStorageReady] = useState(false);
+  const [activeWordId, setActiveWordId] = useState<number | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -344,6 +360,232 @@ export default function Home() {
     ? `${visibleWords.length.toLocaleString()}개 학습 중`
     : countLabel;
 
+  useEffect(() => {
+    if (visibleWords.length === 0) {
+      setActiveWordId(null);
+      return;
+    }
+
+    if (!activeWordId || !visibleWords.some((word) => word.id === activeWordId)) {
+      setActiveWordId(visibleWords[0].id);
+    }
+  }, [activeWordId, visibleWords]);
+
+  useEffect(() => {
+    function isTypingTarget(target: EventTarget | null) {
+      if (!(target instanceof HTMLElement)) return false;
+      const tagName = target.tagName.toLowerCase();
+      return (
+        tagName === "input" ||
+        tagName === "textarea" ||
+        tagName === "select" ||
+        target.isContentEditable
+      );
+    }
+
+    function handleShortcut(event: KeyboardEvent) {
+      const typing = isTypingTarget(event.target);
+
+      function toggleActiveCell(field: "word" | "reading" | "meaning") {
+        if (!activeWordId) return;
+        const cellKey = `${activeWordId}:${field}`;
+        setRevealedCells((current) => {
+          const next = new Set(current);
+          if (next.has(cellKey)) {
+            next.delete(cellKey);
+          } else {
+            next.add(cellKey);
+          }
+          return next;
+        });
+      }
+
+      function applyShortcutMemoryMode(mode: MemoryMode) {
+        const next = new Set<string>();
+
+        for (const word of pageWords) {
+          if (!DEFAULT_WORD_VISIBLE || mode === "hide_all") {
+            if (mode !== "hide_all") next.add(`${word.id}:word`);
+          }
+          if (mode === "word_reading" || mode === "show_all") {
+            next.add(`${word.id}:reading`);
+          }
+          if (mode === "word_meaning" || mode === "show_all") {
+            next.add(`${word.id}:meaning`);
+          }
+        }
+
+        setMemoryMode(mode);
+        setRevealedCells(next);
+      }
+
+      if (typing) {
+        if (event.key === "Escape") {
+          (event.target as HTMLElement).blur();
+          setKanjiPopup(null);
+        }
+        return;
+      }
+
+      const key = event.key.toLowerCase();
+
+      if (event.key === "/") {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setKanjiPopup(null);
+        return;
+      }
+
+      if (key === "j" || event.key === "ArrowDown") {
+        event.preventDefault();
+        if (visibleWords.length === 0) return;
+        const currentIndex = Math.max(
+          0,
+          visibleWords.findIndex((word) => word.id === activeWordId),
+        );
+        const nextIndex = Math.min(visibleWords.length - 1, currentIndex + 1);
+        setActiveWordId(visibleWords[nextIndex].id);
+        return;
+      }
+
+      if (key === "k" || event.key === "ArrowUp") {
+        event.preventDefault();
+        if (visibleWords.length === 0) return;
+        const currentIndex = Math.max(
+          0,
+          visibleWords.findIndex((word) => word.id === activeWordId),
+        );
+        const nextIndex = Math.max(0, currentIndex - 1);
+        setActiveWordId(visibleWords[nextIndex].id);
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        if (hasNextGroup && !loading) {
+          setKanjiPopup(null);
+          setRevealedCells(new Set());
+          setCurrentGroupOrder([]);
+          setOffset((current) => {
+            const next = current + groupSize;
+            const maxOffset = Math.max(0, (totalGroups - 1) * groupSize);
+            return Math.max(0, Math.min(next, maxOffset));
+          });
+        }
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        if (hasPreviousGroup && !loading) {
+          setKanjiPopup(null);
+          setRevealedCells(new Set());
+          setCurrentGroupOrder([]);
+          setOffset((current) => {
+            const next = current - groupSize;
+            const maxOffset = Math.max(0, (totalGroups - 1) * groupSize);
+            return Math.max(0, Math.min(next, maxOffset));
+          });
+        }
+        return;
+      }
+
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        if (!activeWordId) return;
+        setCompletedWords((current) => {
+          const next = new Set(current);
+          if (next.has(activeWordId)) {
+            next.delete(activeWordId);
+          } else {
+            next.add(activeWordId);
+          }
+          return next;
+        });
+        return;
+      }
+
+      if (key === "r") {
+        event.preventDefault();
+        toggleActiveCell("reading");
+        return;
+      }
+
+      if (key === "m") {
+        event.preventDefault();
+        toggleActiveCell("meaning");
+        return;
+      }
+
+      if (key === "w") {
+        event.preventDefault();
+        toggleActiveCell("word");
+        return;
+      }
+
+      if (key === "s") {
+        event.preventDefault();
+        setCurrentGroupOrder(shuffleWords(pageWords).map((word) => word.id));
+        setKanjiPopup(null);
+        return;
+      }
+
+      if (key === "a") {
+        event.preventDefault();
+        setShuffleSeed(String(Date.now()));
+        setOffset(0);
+        setKanjiPopup(null);
+        return;
+      }
+
+      if (key === "h") {
+        event.preventDefault();
+        setHideCompleted((current) => !current);
+        return;
+      }
+
+      if (key === "0") {
+        event.preventDefault();
+        setSearch("");
+        setKanjiSearch("");
+        setSelectedKanji("");
+        setDetailFilter("all");
+        setOffset(0);
+        setGroupSize(PAGE_SIZE);
+        setShuffleSeed("");
+        setCurrentGroupOrder([]);
+        setRevealedCells(new Set());
+        setMemoryMode("word_only");
+        setHideCompleted(false);
+        setKanjiPopup(null);
+        return;
+      }
+
+      const memoryIndex = Number(event.key) - 1;
+      if (memoryIndex >= 0 && memoryIndex < memoryModeOptions.length) {
+        event.preventDefault();
+        applyShortcutMemoryMode(memoryModeOptions[memoryIndex].value);
+      }
+    }
+
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [
+    activeWordId,
+    groupSize,
+    hasNextGroup,
+    hasPreviousGroup,
+    loading,
+    pageWords,
+    totalGroups,
+    visibleWords,
+  ]);
+
   function resetView() {
     setSearch("");
     setKanjiSearch("");
@@ -456,6 +698,7 @@ export default function Home() {
         <label className="searchBox primarySearch">
           <span>통합 검색</span>
           <input
+            ref={searchInputRef}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="단어, 한자, 히라가나, 한국어 뜻"
@@ -708,9 +951,16 @@ export default function Home() {
                   const wordVisible = isVisible(word.id, "word");
                   const reading = word.reading_hiragana ?? "읽기 미등록";
                   const meaning = word.meaning_ko ?? "뜻 미등록";
+                  const isActive = activeWordId === word.id;
 
                   return (
-                    <tr className={isDone ? "completed" : ""} key={word.id}>
+                    <tr
+                      className={`${isDone ? "completed" : ""} ${
+                        isActive ? "activeRow" : ""
+                      }`}
+                      key={word.id}
+                      onClick={() => setActiveWordId(word.id)}
+                    >
                       <td className="completeCol">
                         <input
                           aria-label={`${word.word} 완료`}
@@ -816,6 +1066,21 @@ export default function Home() {
               >
                 다음 조
               </button>
+            </div>
+          </div>
+
+          <div className="shortcutPanel" aria-label="데스크탑 단축키 안내">
+            <div>
+              <p className="eyebrow">Keyboard</p>
+              <h3>데스크탑 단축키</h3>
+            </div>
+            <div className="shortcutGrid">
+              {shortcutHelp.map((shortcut) => (
+                <span className="shortcutItem" key={shortcut.key}>
+                  <kbd>{shortcut.key}</kbd>
+                  {shortcut.label}
+                </span>
+              ))}
             </div>
           </div>
         </section>
