@@ -14,6 +14,7 @@ This folder contains a repeatable PostgreSQL import for `n1-vocab-kanji.xlsx`.
 
 - `schema.sql`: creates the vocabulary tables and indexes.
 - `import_vocab.py`: reads all workbook sheets and imports kanji-containing words.
+- `import_vocab_2.py`: imports new kanji-containing words from `n1-vocab-kanji_2.xlsx`.
 - `verify.sql`: runs count and sample validation queries.
 - `requirements.txt`: Python dependencies.
 
@@ -49,6 +50,14 @@ Import workbook:
 python import_vocab.py
 ```
 
+Import the second workbook without adding duplicates or kana-only words:
+
+```powershell
+python import_vocab_2.py --dry-run
+python import_vocab_2.py
+python export_static_vocab.py
+```
+
 Verify:
 
 ```powershell
@@ -64,6 +73,14 @@ python -c "import os, psycopg; from dotenv import load_dotenv; load_dotenv(); sq
 - Kanji are extracted from each word.
 - Word-kanji relation rows store the 1-based character position inside the word.
 - `reading_hiragana` and `meaning_ko` stay `NULL` when not present in the workbook.
+
+`import_vocab_2.py` is stricter:
+
+- Reads only the first column of `n1-vocab-kanji_2.xlsx`.
+- Skips words already present in `jp_vocab_words`.
+- Skips duplicate words inside the workbook.
+- Skips words without CJK kanji.
+- Leaves `reading_hiragana` and `meaning_ko` as `NULL`.
 
 ## Web App
 
