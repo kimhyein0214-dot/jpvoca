@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type DetailFilter = "all" | "missing_reading" | "missing_meaning";
+type DetailFilter =
+  | "all"
+  | "has_kanji"
+  | "no_kanji"
+  | "missing_reading"
+  | "missing_meaning";
 type KeyboardScope = "words" | "kanji";
 type MemoryMode =
   | "word_only"
@@ -54,6 +59,8 @@ type StoredStudyState = {
 
 const filterOptions: { label: string; value: DetailFilter }[] = [
   { label: "전체", value: "all" },
+  { label: "한자 있음", value: "has_kanji" },
+  { label: "한자 없음", value: "no_kanji" },
   { label: "읽기 미등록", value: "missing_reading" },
   { label: "뜻 미등록", value: "missing_meaning" },
 ];
@@ -109,6 +116,7 @@ function matchesSearch(word: Word, keyword: string) {
     word.word,
     word.reading_hiragana ?? "",
     word.meaning_ko ?? "",
+    word.kanji.length === 0 ? "한자 없음" : "",
     ...word.kanji.flatMap((kanji) => [
       kanji.character,
       kanji.korean_name ?? "",
@@ -119,6 +127,8 @@ function matchesSearch(word: Word, keyword: string) {
 }
 
 function matchesDetailFilter(word: Word, detailFilter: DetailFilter) {
+  if (detailFilter === "has_kanji") return word.kanji.length > 0;
+  if (detailFilter === "no_kanji") return word.kanji.length === 0;
   if (detailFilter === "missing_reading") return !word.reading_hiragana;
   if (detailFilter === "missing_meaning") return !word.meaning_ko;
   return true;
@@ -228,6 +238,8 @@ export default function Home() {
         }
         if (
           savedState.detailFilter === "all" ||
+          savedState.detailFilter === "has_kanji" ||
+          savedState.detailFilter === "no_kanji" ||
           savedState.detailFilter === "missing_reading" ||
           savedState.detailFilter === "missing_meaning"
         ) {
@@ -1135,21 +1147,25 @@ export default function Home() {
                       </td>
                       <td>
                         <div className="inlineKanji">
-                          {word.kanji.map((kanji, index) => (
-                            <span key={`${word.id}-${kanji.id}-${kanji.position}`}>
-                              {index > 0 ? <span className="slash">/</span> : null}
-                              <button
-                                className={
-                                  selectedKanji === kanji.character ? "active" : ""
-                                }
-                                type="button"
-                                onClick={() => setKanjiPopup(kanji)}
-                                title={`${kanji.korean_name ?? "이름 미등록"} 보기`}
-                              >
-                                {kanji.character}
-                              </button>
-                            </span>
-                          ))}
+                          {word.kanji.length > 0 ? (
+                            word.kanji.map((kanji, index) => (
+                              <span key={`${word.id}-${kanji.id}-${kanji.position}`}>
+                                {index > 0 ? <span className="slash">/</span> : null}
+                                <button
+                                  className={
+                                    selectedKanji === kanji.character ? "active" : ""
+                                  }
+                                  type="button"
+                                  onClick={() => setKanjiPopup(kanji)}
+                                  title={`${kanji.korean_name ?? "이름 미등록"} 보기`}
+                                >
+                                  {kanji.character}
+                                </button>
+                              </span>
+                            ))
+                          ) : (
+                            <span className="noKanjiBadge">한자 없음</span>
+                          )}
                         </div>
                       </td>
                       <td className="audioCol">

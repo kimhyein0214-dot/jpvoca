@@ -178,10 +178,15 @@ def import_words(conn: psycopg.Connection, words: list[CandidateWord]) -> tuple[
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Import new kanji-containing words from n1-vocab-kanji_2.xlsx."
+        description="Import new words from n1-vocab-kanji_2.xlsx."
     )
     parser.add_argument("--xlsx", default=WORKBOOK, help="Path to the xlsx workbook.")
     parser.add_argument("--dry-run", action="store_true", help="Print summary without writing to DB.")
+    parser.add_argument(
+        "--include-no-kanji",
+        action="store_true",
+        help="Also import words without CJK kanji. They will have no word-kanji relation rows.",
+    )
     args = parser.parse_args()
 
     load_dotenv()
@@ -198,13 +203,17 @@ def main() -> None:
     with psycopg.connect(database_url) as conn:
         existing_words = fetch_existing_words(conn)
         existing_skipped = [item for item in unique_candidates if item.word in existing_words]
-        no_kanji_skipped = [
+        no_kanji_candidates = [
             item for item in unique_candidates
             if item.word not in existing_words and not contains_kanji(item.word)
         ]
-        import_targets = [
+        kanji_import_targets = [
             item for item in unique_candidates
             if item.word not in existing_words and contains_kanji(item.word)
+        ]
+        import_targets = [
+            *kanji_import_targets,
+            *(no_kanji_candidates if args.include_no_kanji else []),
         ]
 
         print(f"xlsx_rows={sum(counts.values())}")
@@ -215,7 +224,9 @@ def main() -> None:
             + ",".join(sorted(word for word, count in counts.items() if count > 1))
         )
         print(f"existing_words_skipped={len(existing_skipped)}")
-        print(f"no_kanji_skipped={len(no_kanji_skipped)}")
+        print(f"no_kanji_candidates={len(no_kanji_candidates)}")
+        print(f"no_kanji_skipped={0 if args.include_no_kanji else len(no_kanji_candidates)}")
+        print(f"include_no_kanji={str(args.include_no_kanji).lower()}")
         print(f"import_targets={len(import_targets)}")
 
         if args.dry_run:

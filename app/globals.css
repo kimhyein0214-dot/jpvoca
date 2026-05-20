@@ -686,6 +686,21 @@ h2 {
   color: #ffffff;
 }
 
+.noKanjiBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border: 1.5px dashed var(--muted);
+  border-radius: 8px;
+  background: #f4f6f1;
+  color: var(--muted-strong);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 900;
+  padding: 5px 10px;
+  white-space: nowrap;
+}
+
 .slash {
   color: var(--muted);
   font-weight: 800;

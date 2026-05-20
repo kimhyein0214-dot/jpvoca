@@ -58,6 +58,14 @@ python import_vocab_2.py
 python export_static_vocab.py
 ```
 
+Import kana-only or katakana words from the second workbook too:
+
+```powershell
+python import_vocab_2.py --include-no-kanji --dry-run
+python import_vocab_2.py --include-no-kanji
+python export_static_vocab.py
+```
+
 Verify:
 
 ```powershell
@@ -79,8 +87,9 @@ python -c "import os, psycopg; from dotenv import load_dotenv; load_dotenv(); sq
 - Reads only the first column of `n1-vocab-kanji_2.xlsx`.
 - Skips words already present in `jp_vocab_words`.
 - Skips duplicate words inside the workbook.
-- Skips words without CJK kanji.
+- Skips words without CJK kanji unless `--include-no-kanji` is used.
 - Leaves `reading_hiragana` and `meaning_ko` as `NULL`.
+- Words without CJK kanji are stored in `jp_vocab_words` only and have no `jp_vocab_word_kanji` relation rows.
 
 ## Web App
 
