@@ -701,7 +701,11 @@ export default function Home() {
     setActiveWordId(null);
     setActiveKanjiCharacter(null);
     setKeyboardScope("words");
+    setCompletedWords(new Set());
     searchInputRef.current?.blur();
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
   }
 
   function moveGroup(direction: "previous" | "next") {
