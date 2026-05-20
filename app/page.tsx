@@ -658,19 +658,7 @@ export default function Home() {
 
       if (key === "0") {
         event.preventDefault();
-        setSearch("");
-        setKanjiSearch("");
-        setSelectedKanji("");
-        setDetailFilter("all");
-        setOffset(0);
-        setGroupSize(PAGE_SIZE);
-        setShuffleSeed("");
-        setCurrentGroupOrder([]);
-        setRevealedCells(new Set());
-        setMemoryMode("word_only");
-        setHideCompleted(false);
-        setKanjiPopup(null);
-        setKeyboardScope("words");
+        resetView();
         return;
       }
 
@@ -710,6 +698,10 @@ export default function Home() {
     setMemoryMode("word_only");
     setHideCompleted(false);
     setKanjiPopup(null);
+    setActiveWordId(null);
+    setActiveKanjiCharacter(null);
+    setKeyboardScope("words");
+    searchInputRef.current?.blur();
   }
 
   function moveGroup(direction: "previous" | "next") {
