@@ -17,6 +17,7 @@ This folder contains a repeatable PostgreSQL import for `n1-vocab-kanji.xlsx`.
 - `import_vocab_2.py`: imports new kanji-containing words from `n1-vocab-kanji_2.xlsx`.
 - `update_word_examples.py`: upserts example sentences into `jp_vocab_word_examples`.
 - `export_missing_word_examples.py`: exports words that still need examples.
+- `extract_public_domain_usage.py`: finds public-domain Aozora Bunko usage lines for words that still need examples.
 - `verify.sql`: runs count and sample validation queries.
 - `requirements.txt`: Python dependencies.
 
@@ -200,6 +201,37 @@ Behavior:
 - Skips words that do not exist in `jp_vocab_words`.
 - Uses `INSERT ... ON CONFLICT` so the same CSV can be run repeatedly.
 - The web app displays the first example below each word row when examples exist.
+
+## Public Domain Usage References
+
+Use `extract_public_domain_usage.py` when you want to check how missing words appear in public-domain Aozora Bunko texts before writing study examples.
+
+Input files:
+
+```text
+missing_word_examples.csv
+pd_sources_aozora.csv
+```
+
+Run:
+
+```powershell
+python export_missing_word_examples.py
+python extract_public_domain_usage.py --max-per-word 2
+```
+
+Output file:
+
+```text
+public_domain_usage_matches.csv
+```
+
+Behavior:
+
+- Downloads the listed Aozora Bunko zip files into `.tools/aozora_cache`.
+- Strips ruby notes and editor annotations before matching.
+- Exports matched public-domain usage lines with title, author, and URL.
+- Intended as a reference source for writing modern N1-level examples, not as an automatic raw quote importer.
 
 ## Deploy To GitHub Pages
 
