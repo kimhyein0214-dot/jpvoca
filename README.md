@@ -15,6 +15,8 @@ This folder contains a repeatable PostgreSQL import for `n1-vocab-kanji.xlsx`.
 - `schema.sql`: creates the vocabulary tables and indexes.
 - `import_vocab.py`: reads all workbook sheets and imports kanji-containing words.
 - `import_vocab_2.py`: imports new kanji-containing words from `n1-vocab-kanji_2.xlsx`.
+- `update_word_examples.py`: upserts example sentences into `jp_vocab_word_examples`.
+- `export_missing_word_examples.py`: exports words that still need examples.
 - `verify.sql`: runs count and sample validation queries.
 - `requirements.txt`: Python dependencies.
 
@@ -161,6 +163,43 @@ Behavior:
 - Exports all words and kanji into one JSON file.
 - The deployed GitHub Pages app reads only this JSON file.
 - `DATABASE_URL` is not included in the deployed site.
+
+## Update Word Examples From CSV
+
+Use `update_word_examples.py` to add N1-level example sentences.
+
+Input file:
+
+```text
+word_examples.csv
+```
+
+Required CSV columns:
+
+```text
+word,example_jp,example_ko
+```
+
+Optional column:
+
+```text
+source
+```
+
+Run:
+
+```powershell
+python export_missing_word_examples.py
+python update_word_examples.py --csv word_examples.csv
+python export_static_vocab.py
+```
+
+Behavior:
+
+- Matches examples by exact `word`.
+- Skips words that do not exist in `jp_vocab_words`.
+- Uses `INSERT ... ON CONFLICT` so the same CSV can be run repeatedly.
+- The web app displays the first example below each word row when examples exist.
 
 ## Deploy To GitHub Pages
 

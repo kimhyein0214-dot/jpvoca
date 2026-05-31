@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
 type DetailFilter =
   | "all"
@@ -35,6 +35,12 @@ type Word = {
     character: string;
     korean_name: string | null;
     position: number;
+  }[];
+  examples?: {
+    id: number;
+    example_jp: string;
+    example_ko: string | null;
+    source: string | null;
   }[];
 };
 
@@ -117,6 +123,10 @@ function matchesSearch(word: Word, keyword: string) {
     word.reading_hiragana ?? "",
     word.meaning_ko ?? "",
     word.kanji.length === 0 ? "한자 없음" : "",
+    ...(word.examples ?? []).flatMap((example) => [
+      example.example_jp,
+      example.example_ko ?? "",
+    ]),
     ...word.kanji.flatMap((kanji) => [
       kanji.character,
       kanji.korean_name ?? "",
@@ -1082,100 +1092,115 @@ export default function Home() {
                   const reading = word.reading_hiragana ?? "읽기 미등록";
                   const meaning = word.meaning_ko ?? "뜻 미등록";
                   const isActive = activeWordId === word.id;
+                  const primaryExample = word.examples?.[0] ?? null;
 
                   return (
-                    <tr
-                      className={`${isDone ? "completed" : ""} ${
-                        isActive ? "activeRow" : ""
-                      }`}
-                      key={word.id}
-                      onClick={() => {
-                        setActiveWordId(word.id);
-                        setKeyboardScope("words");
-                      }}
-                    >
-                      <td className="completeCol">
-                        <input
-                          aria-label={`${word.word} 완료`}
-                          checked={isDone}
-                          onChange={() => toggleComplete(word.id)}
-                          type="checkbox"
-                        />
-                      </td>
-                      <td>
-                        <button
-                          className="memoryCell wordCell"
-                          type="button"
-                          onClick={() => toggleCell(word.id, "word")}
-                        >
-                          {wordVisible ? (
-                            word.word
-                          ) : (
-                            <span className="hiddenPrompt">단어 보기</span>
-                          )}
-                        </button>
-                      </td>
-                      <td>
-                        <button
-                          className="memoryCell readingCell"
-                          type="button"
-                          onClick={() => toggleCell(word.id, "reading")}
-                        >
-                          {readingVisible ? (
-                            reading
-                          ) : (
-                            <span className="hiddenPrompt">읽기 보기</span>
-                          )}
-                        </button>
-                      </td>
-                      <td>
-                        <button
-                          className="memoryCell meaningCell"
-                          type="button"
-                          onClick={() => toggleCell(word.id, "meaning")}
-                        >
-                          {meaningVisible ? (
-                            meaning
-                          ) : (
-                            <span className="hiddenPrompt">뜻 보기</span>
-                          )}
-                        </button>
-                      </td>
-                      <td>
-                        <div className="inlineKanji">
-                          {word.kanji.length > 0 ? (
-                            word.kanji.map((kanji, index) => (
-                              <span key={`${word.id}-${kanji.id}-${kanji.position}`}>
-                                {index > 0 ? <span className="slash">/</span> : null}
-                                <button
-                                  className={
-                                    selectedKanji === kanji.character ? "active" : ""
-                                  }
-                                  type="button"
-                                  onClick={() => setKanjiPopup(kanji)}
-                                  title={`${kanji.korean_name ?? "이름 미등록"} 보기`}
-                                >
-                                  {kanji.character}
-                                </button>
-                              </span>
-                            ))
-                          ) : (
-                            <span className="noKanjiBadge">한자 없음</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="audioCol">
-                        <button
-                          className="audioButton"
-                          type="button"
-                          onClick={() => speakJapanese(word.reading_hiragana ?? word.word)}
-                          title="일본어 발음 듣기"
-                          aria-label={`${word.word} 발음 듣기`}
-                        >
-                          ▶
-                        </button>
-                      </td>
-                    </tr>
+                    <Fragment key={word.id}>
+                      <tr
+                        className={`${isDone ? "completed" : ""} ${
+                          isActive ? "activeRow" : ""
+                        }`}
+                        onClick={() => {
+                          setActiveWordId(word.id);
+                          setKeyboardScope("words");
+                        }}
+                      >
+                        <td className="completeCol">
+                          <input
+                            aria-label={`${word.word} 완료`}
+                            checked={isDone}
+                            onChange={() => toggleComplete(word.id)}
+                            type="checkbox"
+                          />
+                        </td>
+                        <td>
+                          <button
+                            className="memoryCell wordCell"
+                            type="button"
+                            onClick={() => toggleCell(word.id, "word")}
+                          >
+                            {wordVisible ? (
+                              word.word
+                            ) : (
+                              <span className="hiddenPrompt">단어 보기</span>
+                            )}
+                          </button>
+                        </td>
+                        <td>
+                          <button
+                            className="memoryCell readingCell"
+                            type="button"
+                            onClick={() => toggleCell(word.id, "reading")}
+                          >
+                            {readingVisible ? (
+                              reading
+                            ) : (
+                              <span className="hiddenPrompt">읽기 보기</span>
+                            )}
+                          </button>
+                        </td>
+                        <td>
+                          <button
+                            className="memoryCell meaningCell"
+                            type="button"
+                            onClick={() => toggleCell(word.id, "meaning")}
+                          >
+                            {meaningVisible ? (
+                              meaning
+                            ) : (
+                              <span className="hiddenPrompt">뜻 보기</span>
+                            )}
+                          </button>
+                        </td>
+                        <td>
+                          <div className="inlineKanji">
+                            {word.kanji.length > 0 ? (
+                              word.kanji.map((kanji, index) => (
+                                <span key={`${word.id}-${kanji.id}-${kanji.position}`}>
+                                  {index > 0 ? <span className="slash">/</span> : null}
+                                  <button
+                                    className={
+                                      selectedKanji === kanji.character ? "active" : ""
+                                    }
+                                    type="button"
+                                    onClick={() => setKanjiPopup(kanji)}
+                                    title={`${kanji.korean_name ?? "이름 미등록"} 보기`}
+                                  >
+                                    {kanji.character}
+                                  </button>
+                                </span>
+                              ))
+                            ) : (
+                              <span className="noKanjiBadge">한자 없음</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="audioCol">
+                          <button
+                            className="audioButton"
+                            type="button"
+                            onClick={() => speakJapanese(word.reading_hiragana ?? word.word)}
+                            title="일본어 발음 듣기"
+                            aria-label={`${word.word} 발음 듣기`}
+                          >
+                            ▶
+                          </button>
+                        </td>
+                      </tr>
+                      {primaryExample ? (
+                        <tr className={`exampleRow ${isDone ? "completed" : ""}`}>
+                          <td />
+                          <td colSpan={5}>
+                            <div className="exampleBox">
+                              <p className="exampleJp">{primaryExample.example_jp}</p>
+                              {primaryExample.example_ko ? (
+                                <p className="exampleKo">{primaryExample.example_ko}</p>
+                              ) : null}
+                            </div>
+                          </td>
+                        </tr>
+                      ) : null}
+                    </Fragment>
                   );
                 })}
               </tbody>

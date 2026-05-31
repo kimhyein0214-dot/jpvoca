@@ -23,21 +23,39 @@ def fetch_words(conn):
               w.level,
               w.source_sheet,
               COALESCE(
-                json_agg(
-                  json_build_object(
-                    'id', k.id,
-                    'character', k.character,
-                    'korean_name', k.korean_name,
-                    'position', wk.position
+                (
+                  SELECT json_agg(
+                    json_build_object(
+                      'id', k.id,
+                      'character', k.character,
+                      'korean_name', k.korean_name,
+                      'position', wk.position
+                    )
+                    ORDER BY wk.position
                   )
-                  ORDER BY wk.position
-                ) FILTER (WHERE k.id IS NOT NULL),
+                  FROM jp_vocab_word_kanji wk
+                  JOIN jp_vocab_kanji k ON k.id = wk.kanji_id
+                  WHERE wk.word_id = w.id
+                ),
                 '[]'::json
-              ) AS kanji
+              ) AS kanji,
+              COALESCE(
+                (
+                  SELECT json_agg(
+                    json_build_object(
+                      'id', e.id,
+                      'example_jp', e.example_jp,
+                      'example_ko', e.example_ko,
+                      'source', e.source
+                    )
+                    ORDER BY e.id
+                  )
+                  FROM jp_vocab_word_examples e
+                  WHERE e.word_id = w.id
+                ),
+                '[]'::json
+              ) AS examples
             FROM jp_vocab_words w
-            LEFT JOIN jp_vocab_word_kanji wk ON wk.word_id = w.id
-            LEFT JOIN jp_vocab_kanji k ON k.id = wk.kanji_id
-            GROUP BY w.id
             ORDER BY w.word
             """
         )
@@ -52,6 +70,7 @@ def fetch_words(conn):
             "level": row[4],
             "source_sheet": row[5],
             "kanji": row[6],
+            "examples": row[7],
         }
         for row in rows
     ]

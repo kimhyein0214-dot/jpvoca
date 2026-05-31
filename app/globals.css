@@ -18,8 +18,8 @@
     "Noto Sans CJK JP", "Apple SD Gothic Neo", sans-serif;
   --font-body: "Noto Sans KR", "Noto Sans JP", "Noto Sans CJK KR",
     "Noto Sans CJK JP", "Apple SD Gothic Neo", sans-serif;
-  --font-kanji: "Noto Sans CJK JP", "Noto Sans JP", "Yu Gothic",
-    "Noto Sans CJK KR", "Apple SD Gothic Neo", sans-serif;
+  --font-kanji: "Yu Mincho", "Hiragino Mincho ProN", "BIZ UDPMincho",
+    "Noto Serif JP", "Noto Serif CJK JP", "Noto Serif CJK KR", serif;
 }
 
 * {
@@ -723,6 +723,38 @@ h2 {
 .audioButton:hover {
   background: var(--accent);
   color: #ffffff;
+}
+
+.exampleRow td {
+  border-top: 0;
+  background: rgba(255, 255, 251, 0.72);
+  padding-top: 0;
+}
+
+.exampleRow.completed {
+  opacity: 0.46;
+}
+
+.exampleBox {
+  display: grid;
+  gap: 5px;
+  border-left: 3px solid var(--line-soft);
+  padding: 7px 10px 10px;
+}
+
+.exampleJp {
+  color: var(--ink);
+  font-family: var(--font-kanji);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+.exampleKo {
+  color: var(--muted-strong);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
 }
 
 .notice {
