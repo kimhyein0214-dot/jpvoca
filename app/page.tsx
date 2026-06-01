@@ -58,6 +58,7 @@ const STORAGE_KEY = "jp-vocab-study-state-v1";
 type StoredStudyState = {
   completedWordIds?: number[];
   hideCompleted?: boolean;
+  showExampleFurigana?: boolean;
   groupSize?: number;
   memoryMode?: MemoryMode;
   detailFilter?: DetailFilter;
@@ -91,6 +92,7 @@ const shortcutHelp = [
   { key: "1-5", label: "암기 모드" },
   { key: "S", label: "현재 조 셔플" },
   { key: "A", label: "전체 셔플" },
+  { key: "F", label: "예문 후리가나" },
   { key: "H", label: "완료 숨기기" },
   { key: "Esc", label: "닫기" },
 ];
@@ -149,6 +151,28 @@ function matchesKanji(word: Word, selectedKanji: string) {
   return word.kanji.some((kanji) => kanji.character === selectedKanji);
 }
 
+function renderExampleJapanese(word: Word, exampleText: string, showFurigana: boolean) {
+  const reading = word.reading_hiragana?.trim();
+  if (!showFurigana || !reading || reading === word.word) {
+    return exampleText;
+  }
+
+  const parts = exampleText.split(word.word);
+  if (parts.length === 1) return exampleText;
+
+  return parts.map((part, index) => (
+    <Fragment key={`${word.id}-example-${index}`}>
+      {part}
+      {index < parts.length - 1 ? (
+        <ruby className="exampleRuby">
+          {word.word}
+          <rt>{reading}</rt>
+        </ruby>
+      ) : null}
+    </Fragment>
+  ));
+}
+
 export default function Home() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [staticData, setStaticData] = useState<StaticVocabData>({
@@ -169,6 +193,7 @@ export default function Home() {
   const [revealedCells, setRevealedCells] = useState<Set<string>>(new Set());
   const [completedWords, setCompletedWords] = useState<Set<number>>(new Set());
   const [hideCompleted, setHideCompleted] = useState(false);
+  const [showExampleFurigana, setShowExampleFurigana] = useState(false);
   const [kanjiPopup, setKanjiPopup] = useState<Word["kanji"][number] | null>(null);
   const [storageReady, setStorageReady] = useState(false);
   const [activeWordId, setActiveWordId] = useState<number | null>(null);
@@ -231,6 +256,9 @@ export default function Home() {
         if (typeof savedState.hideCompleted === "boolean") {
           setHideCompleted(savedState.hideCompleted);
         }
+        if (typeof savedState.showExampleFurigana === "boolean") {
+          setShowExampleFurigana(savedState.showExampleFurigana);
+        }
         if (
           typeof savedState.groupSize === "number" &&
           Number.isFinite(savedState.groupSize)
@@ -269,6 +297,7 @@ export default function Home() {
     const savedState: StoredStudyState = {
       completedWordIds: [...completedWords],
       hideCompleted,
+      showExampleFurigana,
       groupSize,
       memoryMode,
       detailFilter,
@@ -279,7 +308,15 @@ export default function Home() {
     } catch (err) {
       console.warn("학습 기록을 저장하지 못했습니다.", err);
     }
-  }, [completedWords, detailFilter, groupSize, hideCompleted, memoryMode, storageReady]);
+  }, [
+    completedWords,
+    detailFilter,
+    groupSize,
+    hideCompleted,
+    memoryMode,
+    showExampleFurigana,
+    storageReady,
+  ]);
 
   useEffect(() => {
     setOffset(0);
@@ -666,6 +703,12 @@ export default function Home() {
         return;
       }
 
+      if (key === "f") {
+        event.preventDefault();
+        setShowExampleFurigana((current) => !current);
+        return;
+      }
+
       if (key === "0") {
         event.preventDefault();
         resetView();
@@ -707,6 +750,7 @@ export default function Home() {
     setRevealedCells(new Set());
     setMemoryMode("word_only");
     setHideCompleted(false);
+    setShowExampleFurigana(false);
     setKanjiPopup(null);
     setActiveWordId(null);
     setActiveKanjiCharacter(null);
@@ -882,6 +926,13 @@ export default function Home() {
               onClick={() => setHideCompleted((current) => !current)}
             >
               완료 숨기기
+            </button>
+            <button
+              className={`toolButton secondary ${showExampleFurigana ? "active" : ""}`}
+              type="button"
+              onClick={() => setShowExampleFurigana((current) => !current)}
+            >
+              예문 후리가나
             </button>
           </div>
         </div>
@@ -1061,6 +1112,9 @@ export default function Home() {
             <span className={`stateChip ${keyboardScope === "kanji" ? "strong" : ""}`}>
               키보드: {keyboardScope === "kanji" ? "한자" : "단어"}
             </span>
+            <span className={`stateChip ${showExampleFurigana ? "strong" : ""}`}>
+              예문 후리가나: {showExampleFurigana ? "켜짐" : "꺼짐"}
+            </span>
           </div>
 
           {error ? <div className="notice error">{error}</div> : null}
@@ -1192,7 +1246,13 @@ export default function Home() {
                           <td />
                           <td colSpan={5}>
                             <div className="exampleBox">
-                              <p className="exampleJp">{primaryExample.example_jp}</p>
+                              <p className="exampleJp">
+                                {renderExampleJapanese(
+                                  word,
+                                  primaryExample.example_jp,
+                                  showExampleFurigana,
+                                )}
+                              </p>
                               {primaryExample.example_ko ? (
                                 <p className="exampleKo">{primaryExample.example_ko}</p>
                               ) : null}

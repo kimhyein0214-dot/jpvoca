@@ -750,6 +750,19 @@ h2 {
   line-height: 1.7;
 }
 
+.exampleRuby {
+  ruby-position: over;
+}
+
+.exampleRuby rt {
+  color: var(--muted-strong);
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
 .exampleKo {
   color: var(--muted-strong);
   font-size: 13px;

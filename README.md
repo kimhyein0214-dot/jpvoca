@@ -107,6 +107,7 @@ This folder also contains a Next.js web app for browsing the exported vocabulary
 - Searches word, kanji, hiragana reading, Korean meaning, and kanji Korean name.
 - Uses `public/vocab-static.json` in the browser, so GitHub Pages can host it without a server.
 - Displays `읽기 미등록` and `뜻 미등록` when database values are `NULL`.
+- Can toggle furigana on example sentences for the target vocabulary word.
 
 ### Install and Run
 
