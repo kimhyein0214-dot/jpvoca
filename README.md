@@ -18,6 +18,7 @@ This folder contains a repeatable PostgreSQL import for `n1-vocab-kanji.xlsx`.
 - `update_word_examples.py`: upserts example sentences into `jp_vocab_word_examples`.
 - `export_missing_word_examples.py`: exports words that still need examples.
 - `extract_public_domain_usage.py`: finds public-domain Aozora Bunko usage lines for words that still need examples.
+- `export_simplify_meaning_candidates.py`: exports fast-memorization Korean meaning simplification candidates.
 - `verify.sql`: runs count and sample validation queries.
 - `requirements.txt`: Python dependencies.
 
@@ -297,6 +298,32 @@ Behavior:
 - Empty CSV cells do not overwrite existing database values.
 - Words not found in `jp_vocab_words` are skipped and printed.
 - Prints `updated_rows` and `skipped_rows`.
+
+## Simplify Korean Meanings For Memorization
+
+Use `export_simplify_meaning_candidates.py` to shorten multi-gloss Korean meanings into one fast-memorization representative meaning.
+
+Run:
+
+```powershell
+python export_simplify_meaning_candidates.py
+python update_word_details.py --csv word_details_simplified_meanings.csv
+python export_static_vocab.py
+```
+
+Output files:
+
+```text
+simplified_meaning_candidates.csv
+word_details_simplified_meanings.csv
+```
+
+Behavior:
+
+- Focuses on adverbs, kana expressions, verbs, and adjectives.
+- Keeps noun-like compound meanings unless a safe manual rule exists.
+- Uses manual overrides for meanings that should not be mechanically split.
+- Does not change the database schema.
 
 ## Export Missing Word Details To CSV
 
