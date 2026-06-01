@@ -7,6 +7,8 @@ from pathlib import Path
 
 import psycopg
 import pykakasi
+from sudachipy import dictionary
+from sudachipy import tokenizer as sudachi_tokenizer
 from dotenv import load_dotenv
 
 
@@ -15,12 +17,27 @@ KANJI_READING_RE = re.compile(r"[\u3400-\u9fff々〆ヵヶ]")
 
 
 def build_furigana_converter():
-    return pykakasi.kakasi()
+    return {
+        "sudachi": dictionary.Dictionary().create(),
+        "mode": sudachi_tokenizer.Tokenizer.SplitMode.C,
+        "fallback": pykakasi.kakasi(),
+    }
 
 
-def append_kakasi_segments(converter, text):
+def katakana_to_hiragana(text):
+    chars = []
+    for char in text:
+        code = ord(char)
+        if 0x30A1 <= code <= 0x30F6:
+            chars.append(chr(code - 0x60))
+        else:
+            chars.append(char)
+    return "".join(chars)
+
+
+def append_fallback_segments(converter, text):
     segments = []
-    for item in converter.convert(text or ""):
+    for item in converter["fallback"].convert(text or ""):
         original = item.get("orig") or ""
         reading = item.get("hira") or ""
         if not original:
@@ -30,6 +47,31 @@ def append_kakasi_segments(converter, text):
             segments.append({"text": original, "reading": reading})
         else:
             segments.append({"text": original})
+
+    return segments
+
+
+def append_auto_furigana_segments(converter, text):
+    if not text:
+        return []
+
+    segments = []
+    try:
+        for morpheme in converter["sudachi"].tokenize(text, converter["mode"]):
+            original = morpheme.surface()
+            reading = katakana_to_hiragana(morpheme.reading_form())
+            if (
+                original
+                and reading
+                and reading != original
+                and reading != "*"
+                and KANJI_READING_RE.search(original)
+            ):
+                segments.append({"text": original, "reading": reading})
+            elif original:
+                segments.append({"text": original})
+    except Exception:
+        return append_fallback_segments(converter, text)
 
     return segments
 
@@ -46,7 +88,7 @@ def build_example_furigana(converter, text, reading_entries):
         if not buffer:
             return
         buffered_text = "".join(buffer)
-        segments.extend(append_kakasi_segments(converter, buffered_text))
+        segments.extend(append_auto_furigana_segments(converter, buffered_text))
         buffer.clear()
 
     while index < len(text):
@@ -81,6 +123,7 @@ def fetch_words(conn):
               w.reading_hiragana,
               w.meaning_ko,
               w.level,
+              w.pos,
               w.source_sheet,
               COALESCE(
                 (
@@ -133,7 +176,7 @@ def fetch_words(conn):
 
     words = []
     for row in rows:
-        examples = row[7]
+        examples = row[8]
         for example in examples:
             example["example_furigana"] = build_example_furigana(
                 converter,
@@ -147,8 +190,9 @@ def fetch_words(conn):
             "reading_hiragana": row[2],
             "meaning_ko": row[3],
             "level": row[4],
-            "source_sheet": row[5],
-            "kanji": row[6],
+            "pos": row[5],
+            "source_sheet": row[6],
+            "kanji": row[7],
             "examples": examples,
         })
 

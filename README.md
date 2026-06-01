@@ -15,6 +15,7 @@ This folder contains a repeatable PostgreSQL import for `n1-vocab-kanji.xlsx`.
 - `schema.sql`: creates the vocabulary tables and indexes.
 - `import_vocab.py`: reads all workbook sheets and imports kanji-containing words.
 - `import_vocab_2.py`: imports new kanji-containing words from `n1-vocab-kanji_2.xlsx`.
+- `import_extra_n1_verbs.py`: imports the curated extra N1-level verb list from `extra_n1_verbs.csv`.
 - `update_word_examples.py`: upserts example sentences into `jp_vocab_word_examples`.
 - `export_missing_word_examples.py`: exports words that still need examples.
 - `extract_public_domain_usage.py`: finds public-domain Aozora Bunko usage lines for words that still need examples.
@@ -70,6 +71,14 @@ python import_vocab_2.py --include-no-kanji
 python export_static_vocab.py
 ```
 
+Import the curated extra N1-level verbs:
+
+```powershell
+python import_extra_n1_verbs.py --dry-run
+python import_extra_n1_verbs.py
+python export_static_vocab.py
+```
+
 Verify:
 
 ```powershell
@@ -94,6 +103,14 @@ python -c "import os, psycopg; from dotenv import load_dotenv; load_dotenv(); sq
 - Skips words without CJK kanji unless `--include-no-kanji` is used.
 - Leaves `reading_hiragana` and `meaning_ko` as `NULL`.
 - Words without CJK kanji are stored in `jp_vocab_words` only and have no `jp_vocab_word_kanji` relation rows.
+
+`import_extra_n1_verbs.py`:
+
+- Reads `extra_n1_verbs.csv`.
+- Skips verbs already present in `jp_vocab_words`.
+- Inserts new words with `level='N1'` and `pos='verb'`.
+- Adds kanji relation rows with positions when the verb contains kanji.
+- Adds one example sentence per imported verb.
 
 ## Web App
 

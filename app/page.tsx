@@ -29,6 +29,7 @@ type Word = {
   reading_hiragana: string | null;
   meaning_ko: string | null;
   level: string | null;
+  pos: string | null;
   source_sheet: string | null;
   kanji: {
     id: number;
