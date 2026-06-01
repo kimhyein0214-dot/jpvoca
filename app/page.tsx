@@ -41,6 +41,10 @@ type Word = {
     example_jp: string;
     example_ko: string | null;
     source: string | null;
+    example_furigana?: {
+      text: string;
+      reading?: string;
+    }[];
   }[];
 };
 
@@ -151,7 +155,25 @@ function matchesKanji(word: Word, selectedKanji: string) {
   return word.kanji.some((kanji) => kanji.character === selectedKanji);
 }
 
-function renderExampleJapanese(word: Word, exampleText: string, showFurigana: boolean) {
+function renderExampleJapanese(
+  word: Word,
+  example: NonNullable<Word["examples"]>[number],
+  showFurigana: boolean,
+) {
+  const exampleText = example.example_jp;
+  if (showFurigana && example.example_furigana?.length) {
+    return example.example_furigana.map((segment, index) =>
+      segment.reading ? (
+        <ruby className="exampleRuby" key={`${word.id}-example-full-${index}`}>
+          {segment.text}
+          <rt>{segment.reading}</rt>
+        </ruby>
+      ) : (
+        <Fragment key={`${word.id}-example-full-${index}`}>{segment.text}</Fragment>
+      ),
+    );
+  }
+
   const reading = word.reading_hiragana?.trim();
   if (!showFurigana || !reading || reading === word.word) {
     return exampleText;
@@ -1249,7 +1271,7 @@ export default function Home() {
                               <p className="exampleJp">
                                 {renderExampleJapanese(
                                   word,
-                                  primaryExample.example_jp,
+                                  primaryExample,
                                   showExampleFurigana,
                                 )}
                               </p>
