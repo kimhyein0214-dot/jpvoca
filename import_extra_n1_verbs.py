@@ -70,7 +70,9 @@ def read_rows(csv_path: Path) -> list[dict[str, str]]:
         return rows
 
 
-def import_rows(conn: psycopg.Connection, rows: list[dict[str, str]]) -> dict[str, int]:
+def import_rows(
+    conn: psycopg.Connection, rows: list[dict[str, str]], source_sheet: str
+) -> dict[str, int]:
     inserted_words = 0
     skipped_existing = 0
     inserted_examples = 0
@@ -96,7 +98,7 @@ def import_rows(conn: psycopg.Connection, rows: list[dict[str, str]]) -> dict[st
                     row["word"],
                     row["reading_hiragana"],
                     row["meaning_ko"],
-                    DEFAULT_CSV,
+                    source_sheet,
                 ),
             )
             word_id = cur.fetchone()[0]
@@ -168,8 +170,9 @@ def main() -> None:
         print("inserted_relations=0")
         return
 
+    source_sheet = Path(args.csv).name
     with psycopg.connect(database_url) as conn:
-        result = import_rows(conn, rows)
+        result = import_rows(conn, rows, source_sheet)
 
     for key, value in result.items():
         print(f"{key}={value}")
