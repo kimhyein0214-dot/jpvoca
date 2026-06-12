@@ -4,3 +4,4 @@ python-dotenv>=1.0.1
 pykakasi>=2.3.0
 sudachidict_core>=20260428
 sudachipy>=0.6.11
+deep-translator>=1.11.4
