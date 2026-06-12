@@ -39,6 +39,25 @@ AUTHOR_WHITELIST = {
     "森鴎外",
     "夢野久作",
     "横光利一",
+    "石川啄木",
+    "岡本かの子",
+    "岡本綺堂",
+    "織田作之助",
+    "折口信夫",
+    "北大路魯山人",
+    "小林多喜二",
+    "幸田露伴",
+    "佐藤春夫",
+    "寺田寅彦",
+    "徳田秋声",
+    "永井荷風",
+    "新美南吉",
+    "久生十蘭",
+    "二葉亭四迷",
+    "正岡子規",
+    "三好十郎",
+    "宮本百合子",
+    "柳田国男",
 }
 
 SENTENCE_RE = re.compile(r"[^。！？\n\r]{8,180}[。！？]")
@@ -231,6 +250,27 @@ def write_matches(path: Path, matches: dict[str, dict[str, str]]) -> None:
             )
 
 
+def read_matches(path: Path) -> dict[str, dict[str, str]]:
+    with path.open("r", encoding="utf-8-sig", newline="") as file:
+        reader = csv.DictReader(file)
+        matches = {}
+        for row in reader:
+            word = (row.get("word") or "").strip()
+            example_jp = (row.get("example_jp") or "").strip()
+            if not word or not example_jp:
+                continue
+            matches[word] = {
+                "word": word,
+                "reading_hiragana": (row.get("reading_hiragana") or "").strip(),
+                "meaning_ko": (row.get("meaning_ko") or "").strip(),
+                "source_title": (row.get("source_title") or "").strip(),
+                "source_author": (row.get("source_author") or "").strip(),
+                "source_url": (row.get("source_url") or "").strip(),
+                "example_jp": example_jp,
+            }
+        return matches
+
+
 def apply_to_db(
     matches: dict[str, dict[str, str]], purge_generated: bool = False
 ) -> dict[str, int]:
@@ -321,11 +361,23 @@ def main() -> None:
     parser.add_argument("--max-sources", type=int, default=120)
     parser.add_argument("--apply", action="store_true")
     parser.add_argument(
+        "--apply-csv",
+        help="Apply an already generated public-domain example CSV without rescanning sources.",
+    )
+    parser.add_argument(
         "--purge-generated",
         action="store_true",
         help="Remove generated/template examples that were not backed by public-domain text.",
     )
     args = parser.parse_args()
+
+    if args.apply_csv:
+        matches = read_matches(Path(args.apply_csv))
+        print(f"matched_words={len(matches)}")
+        result = apply_to_db(matches, purge_generated=args.purge_generated)
+        for key, value in result.items():
+            print(f"{key}={value}")
+        return
 
     cache_dir = Path(args.cache)
     words = read_static_words(Path(args.static))
