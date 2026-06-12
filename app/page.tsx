@@ -15,7 +15,7 @@ type MemoryMode =
   | "word_meaning"
   | "show_all"
   | "hide_all";
-type CellField = "word" | "reading" | "meaning" | "example" | "exampleMeaning";
+type CellField = "word" | "reading" | "meaning";
 
 type Kanji = {
   id: number;
@@ -64,6 +64,8 @@ const STORAGE_KEY = "jp-vocab-study-state-v1";
 type StoredStudyState = {
   completedWordIds?: number[];
   hideCompleted?: boolean;
+  showExamples?: boolean;
+  showExampleMeanings?: boolean;
   showExampleFurigana?: boolean;
   groupSize?: number;
   memoryMode?: MemoryMode;
@@ -199,6 +201,13 @@ function renderExampleJapanese(
   ));
 }
 
+function formatExampleSource(source: string | null) {
+  if (!source) return "";
+  return source
+    .replace("public_domain:青空文庫:", "青空文庫 / ")
+    .replace("public_domain:????:", "青空文庫 / ");
+}
+
 export default function Home() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [staticData, setStaticData] = useState<StaticVocabData>({
@@ -219,6 +228,8 @@ export default function Home() {
   const [revealedCells, setRevealedCells] = useState<Set<string>>(new Set());
   const [completedWords, setCompletedWords] = useState<Set<number>>(new Set());
   const [hideCompleted, setHideCompleted] = useState(false);
+  const [showExamples, setShowExamples] = useState(false);
+  const [showExampleMeanings, setShowExampleMeanings] = useState(false);
   const [showExampleFurigana, setShowExampleFurigana] = useState(false);
   const [kanjiPopup, setKanjiPopup] = useState<Word["kanji"][number] | null>(null);
   const [storageReady, setStorageReady] = useState(false);
@@ -282,6 +293,12 @@ export default function Home() {
         if (typeof savedState.hideCompleted === "boolean") {
           setHideCompleted(savedState.hideCompleted);
         }
+        if (typeof savedState.showExamples === "boolean") {
+          setShowExamples(savedState.showExamples);
+        }
+        if (typeof savedState.showExampleMeanings === "boolean") {
+          setShowExampleMeanings(savedState.showExampleMeanings);
+        }
         if (typeof savedState.showExampleFurigana === "boolean") {
           setShowExampleFurigana(savedState.showExampleFurigana);
         }
@@ -323,6 +340,8 @@ export default function Home() {
     const savedState: StoredStudyState = {
       completedWordIds: [...completedWords],
       hideCompleted,
+      showExamples,
+      showExampleMeanings,
       showExampleFurigana,
       groupSize,
       memoryMode,
@@ -340,6 +359,8 @@ export default function Home() {
     groupSize,
     hideCompleted,
     memoryMode,
+    showExamples,
+    showExampleMeanings,
     showExampleFurigana,
     storageReady,
   ]);
@@ -530,10 +551,6 @@ export default function Home() {
           if (mode === "word_meaning" || mode === "show_all") {
             next.add(`${word.id}:meaning`);
           }
-          if (mode === "show_all") {
-            next.add(`${word.id}:example`);
-            next.add(`${word.id}:exampleMeaning`);
-          }
         }
 
         setMemoryMode(mode);
@@ -708,13 +725,14 @@ export default function Home() {
 
       if (key === "e") {
         event.preventDefault();
-        toggleActiveCell("example");
+        setShowExamples((current) => !current);
         return;
       }
 
       if (key === "t") {
         event.preventDefault();
-        toggleActiveCell("exampleMeaning");
+        setShowExamples(true);
+        setShowExampleMeanings((current) => !current);
         return;
       }
 
@@ -792,6 +810,8 @@ export default function Home() {
     setRevealedCells(new Set());
     setMemoryMode("word_only");
     setHideCompleted(false);
+    setShowExamples(false);
+    setShowExampleMeanings(false);
     setShowExampleFurigana(false);
     setKanjiPopup(null);
     setActiveWordId(null);
@@ -844,10 +864,6 @@ export default function Home() {
       }
       if (mode === "word_meaning" || mode === "show_all") {
         next.add(`${word.id}:meaning`);
-      }
-      if (mode === "show_all") {
-        next.add(`${word.id}:example`);
-        next.add(`${word.id}:exampleMeaning`);
       }
     }
 
@@ -972,6 +988,23 @@ export default function Home() {
               onClick={() => setHideCompleted((current) => !current)}
             >
               완료 숨기기
+            </button>
+            <button
+              className={`toolButton secondary ${showExamples ? "active" : ""}`}
+              type="button"
+              onClick={() => setShowExamples((current) => !current)}
+            >
+              예문 보기
+            </button>
+            <button
+              className={`toolButton secondary ${showExampleMeanings ? "active" : ""}`}
+              type="button"
+              onClick={() => {
+                setShowExamples(true);
+                setShowExampleMeanings((current) => !current);
+              }}
+            >
+              예문 뜻 보기
             </button>
             <button
               className={`toolButton secondary ${showExampleFurigana ? "active" : ""}`}
@@ -1158,6 +1191,12 @@ export default function Home() {
             <span className={`stateChip ${keyboardScope === "kanji" ? "strong" : ""}`}>
               키보드: {keyboardScope === "kanji" ? "한자" : "단어"}
             </span>
+            <span className={`stateChip ${showExamples ? "strong" : ""}`}>
+              예문: {showExamples ? "켜짐" : "꺼짐"}
+            </span>
+            <span className={`stateChip ${showExampleMeanings ? "strong" : ""}`}>
+              예문 뜻: {showExampleMeanings ? "켜짐" : "꺼짐"}
+            </span>
             <span className={`stateChip ${showExampleFurigana ? "strong" : ""}`}>
               예문 후리가나: {showExampleFurigana ? "켜짐" : "꺼짐"}
             </span>
@@ -1193,8 +1232,6 @@ export default function Home() {
                   const meaning = word.meaning_ko ?? "뜻 미등록";
                   const isActive = activeWordId === word.id;
                   const primaryExample = word.examples?.[0] ?? null;
-                  const exampleVisible = isVisible(word.id, "example");
-                  const exampleMeaningVisible = isVisible(word.id, "exampleMeaning");
                   const exampleMeaning =
                     primaryExample?.example_ko?.trim() || "예문 뜻 미등록";
 
@@ -1291,59 +1328,24 @@ export default function Home() {
                           </button>
                         </td>
                       </tr>
-                      {primaryExample ? (
+                      {showExamples && primaryExample ? (
                         <tr className={`exampleRow ${isDone ? "completed" : ""}`}>
                           <td />
                           <td colSpan={5}>
                             <div className="exampleBox">
-                              <div className="exampleControls">
-                                <button
-                                  className={`exampleToggle ${
-                                    exampleVisible ? "active" : ""
-                                  }`}
-                                  type="button"
-                                  onClick={() => toggleCell(word.id, "example")}
-                                >
-                                  {exampleVisible ? "예문 숨기기" : "예문 보기"}
-                                </button>
-                                <button
-                                  className={`exampleToggle ${
-                                    exampleMeaningVisible ? "active" : ""
-                                  }`}
-                                  type="button"
-                                  onClick={() => toggleCell(word.id, "exampleMeaning")}
-                                >
-                                  {exampleMeaningVisible
-                                    ? "예문 뜻 숨기기"
-                                    : "예문 뜻 보기"}
-                                </button>
-                                {primaryExample.source ? (
-                                  <span className="exampleSource">
-                                    {primaryExample.source.replace(
-                                      "public_domain:青空文庫:",
-                                      "青空文庫 / ",
-                                    )}
-                                  </span>
-                                ) : null}
-                              </div>
-                              {exampleVisible ? (
-                                <p className="exampleJp">
-                                  {renderExampleJapanese(
-                                    word,
-                                    primaryExample,
-                                    showExampleFurigana,
-                                  )}
-                                </p>
-                              ) : (
-                                <button
-                                  className="examplePlaceholder"
-                                  type="button"
-                                  onClick={() => toggleCell(word.id, "example")}
-                                >
-                                  예문 보기
-                                </button>
-                              )}
-                              {exampleMeaningVisible ? (
+                              {primaryExample.source ? (
+                                <span className="exampleSource">
+                                  {formatExampleSource(primaryExample.source)}
+                                </span>
+                              ) : null}
+                              <p className="exampleJp">
+                                {renderExampleJapanese(
+                                  word,
+                                  primaryExample,
+                                  showExampleFurigana,
+                                )}
+                              </p>
+                              {showExampleMeanings ? (
                                 <p
                                   className={`exampleKo ${
                                     primaryExample.example_ko ? "" : "missing"
