@@ -15,6 +15,7 @@ type MemoryMode =
   | "word_meaning"
   | "show_all"
   | "hide_all";
+type CellField = "word" | "reading" | "meaning" | "example" | "exampleMeaning";
 
 type Kanji = {
   id: number;
@@ -92,6 +93,8 @@ const shortcutHelp = [
   { key: "J/K", label: "단어 이동" },
   { key: "R", label: "읽기 보기" },
   { key: "M", label: "뜻 보기" },
+  { key: "E", label: "예문 보기" },
+  { key: "T", label: "예문 뜻" },
   { key: "Enter", label: "완료/한자 선택" },
   { key: "←/→", label: "이전/다음 조" },
   { key: "1-5", label: "암기 모드" },
@@ -500,7 +503,7 @@ export default function Home() {
     function handleShortcut(event: KeyboardEvent) {
       const typing = isTypingTarget(event.target);
 
-      function toggleActiveCell(field: "word" | "reading" | "meaning") {
+      function toggleActiveCell(field: CellField) {
         if (!activeWordId) return;
         const cellKey = `${activeWordId}:${field}`;
         setRevealedCells((current) => {
@@ -526,6 +529,10 @@ export default function Home() {
           }
           if (mode === "word_meaning" || mode === "show_all") {
             next.add(`${word.id}:meaning`);
+          }
+          if (mode === "show_all") {
+            next.add(`${word.id}:example`);
+            next.add(`${word.id}:exampleMeaning`);
           }
         }
 
@@ -699,6 +706,18 @@ export default function Home() {
         return;
       }
 
+      if (key === "e") {
+        event.preventDefault();
+        toggleActiveCell("example");
+        return;
+      }
+
+      if (key === "t") {
+        event.preventDefault();
+        toggleActiveCell("exampleMeaning");
+        return;
+      }
+
       if (key === "w") {
         event.preventDefault();
         toggleActiveCell("word");
@@ -826,13 +845,17 @@ export default function Home() {
       if (mode === "word_meaning" || mode === "show_all") {
         next.add(`${word.id}:meaning`);
       }
+      if (mode === "show_all") {
+        next.add(`${word.id}:example`);
+        next.add(`${word.id}:exampleMeaning`);
+      }
     }
 
     setMemoryMode(mode);
     setRevealedCells(next);
   }
 
-  function toggleCell(wordId: number, field: "word" | "reading" | "meaning") {
+  function toggleCell(wordId: number, field: CellField) {
     const key = `${wordId}:${field}`;
     setRevealedCells((current) => {
       const next = new Set(current);
@@ -845,7 +868,7 @@ export default function Home() {
     });
   }
 
-  function isVisible(wordId: number, field: "word" | "reading" | "meaning") {
+  function isVisible(wordId: number, field: CellField) {
     if (field === "word" && DEFAULT_WORD_VISIBLE) return true;
     return revealedCells.has(`${wordId}:${field}`);
   }
@@ -1170,6 +1193,10 @@ export default function Home() {
                   const meaning = word.meaning_ko ?? "뜻 미등록";
                   const isActive = activeWordId === word.id;
                   const primaryExample = word.examples?.[0] ?? null;
+                  const exampleVisible = isVisible(word.id, "example");
+                  const exampleMeaningVisible = isVisible(word.id, "exampleMeaning");
+                  const exampleMeaning =
+                    primaryExample?.example_ko?.trim() || "예문 뜻 미등록";
 
                   return (
                     <Fragment key={word.id}>
@@ -1269,15 +1296,61 @@ export default function Home() {
                           <td />
                           <td colSpan={5}>
                             <div className="exampleBox">
-                              <p className="exampleJp">
-                                {renderExampleJapanese(
-                                  word,
-                                  primaryExample,
-                                  showExampleFurigana,
-                                )}
-                              </p>
-                              {primaryExample.example_ko ? (
-                                <p className="exampleKo">{primaryExample.example_ko}</p>
+                              <div className="exampleControls">
+                                <button
+                                  className={`exampleToggle ${
+                                    exampleVisible ? "active" : ""
+                                  }`}
+                                  type="button"
+                                  onClick={() => toggleCell(word.id, "example")}
+                                >
+                                  {exampleVisible ? "예문 숨기기" : "예문 보기"}
+                                </button>
+                                <button
+                                  className={`exampleToggle ${
+                                    exampleMeaningVisible ? "active" : ""
+                                  }`}
+                                  type="button"
+                                  onClick={() => toggleCell(word.id, "exampleMeaning")}
+                                >
+                                  {exampleMeaningVisible
+                                    ? "예문 뜻 숨기기"
+                                    : "예문 뜻 보기"}
+                                </button>
+                                {primaryExample.source ? (
+                                  <span className="exampleSource">
+                                    {primaryExample.source.replace(
+                                      "public_domain:青空文庫:",
+                                      "青空文庫 / ",
+                                    )}
+                                  </span>
+                                ) : null}
+                              </div>
+                              {exampleVisible ? (
+                                <p className="exampleJp">
+                                  {renderExampleJapanese(
+                                    word,
+                                    primaryExample,
+                                    showExampleFurigana,
+                                  )}
+                                </p>
+                              ) : (
+                                <button
+                                  className="examplePlaceholder"
+                                  type="button"
+                                  onClick={() => toggleCell(word.id, "example")}
+                                >
+                                  예문 보기
+                                </button>
+                              )}
+                              {exampleMeaningVisible ? (
+                                <p
+                                  className={`exampleKo ${
+                                    primaryExample.example_ko ? "" : "missing"
+                                  }`}
+                                >
+                                  {exampleMeaning}
+                                </p>
                               ) : null}
                             </div>
                           </td>

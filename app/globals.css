@@ -737,9 +737,52 @@ h2 {
 
 .exampleBox {
   display: grid;
-  gap: 5px;
+  gap: 8px;
   border-left: 3px solid var(--line-soft);
   padding: 7px 10px 10px;
+}
+
+.exampleControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.exampleToggle,
+.examplePlaceholder {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border: 1.5px dashed var(--muted);
+  border-radius: 999px;
+  background: #edf2eb;
+  color: var(--muted-strong);
+  padding: 5px 12px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.exampleToggle.active {
+  border-style: solid;
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.examplePlaceholder {
+  justify-self: start;
+  background: #f7f8f3;
+}
+
+.exampleSource {
+  color: var(--muted-strong);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.4;
 }
 
 .exampleJp {
@@ -768,6 +811,11 @@ h2 {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.55;
+}
+
+.exampleKo.missing {
+  color: var(--muted);
+  font-style: italic;
 }
 
 .notice {
