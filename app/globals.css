@@ -1489,9 +1489,11 @@ kbd {
 /* DesktopHub uses a narrow WebView. Keep the study table as a dense table instead
    of allowing the general mobile breakpoint above to turn every word into a card. */
 .hubMode {
-  height: 100vh;
-  min-height: 0;
-  overflow: hidden;
+  /* Use the document scroller in an embedded WebView. Nested scroll areas can
+     lose mouse-wheel input on some WPF WebView2 hosts. */
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
   padding: 6px;
   display: flex;
   flex-direction: column;
@@ -1590,20 +1592,17 @@ kbd {
 
 .hubMode .workspace {
   display: flex;
-  /* The WebView can be much shorter than a normal browser viewport. Giving the
-     list an explicit zero flex basis prevents its table content from expanding
-     the parent and swallowing the only scrollable area. */
-  flex: 1 1 0;
-  min-height: 0;
-  overflow: hidden;
+  flex: none;
+  min-height: auto;
+  overflow: visible;
   grid-template-columns: none;
 }
 
 .hubMode .wordPanel {
   display: flex;
-  flex: 1 1 0;
-  min-height: 0;
-  overflow: hidden;
+  flex: none;
+  min-height: auto;
+  overflow: visible;
   flex-direction: column;
   border-radius: 3px;
   padding: 0;
@@ -1629,13 +1628,10 @@ kbd {
 
 .hubMode .studyTableWrap {
   display: block;
-  flex: 1 1 0;
-  height: 0;
-  min-height: 0;
-  overflow-x: auto;
-  overflow-y: scroll;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  flex: none;
+  height: auto;
+  min-height: auto;
+  overflow: visible;
   margin: 0;
   border: 0;
   border-radius: 0;
