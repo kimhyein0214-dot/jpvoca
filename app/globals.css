@@ -1,19 +1,19 @@
 @import url("https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css");
 
 :root {
-  --background: #edf3e9;
-  --surface: #fbfdf6;
-  --surface-strong: #fffffb;
-  --surface-muted: #e2eadf;
-  --ink: #202724;
-  --muted: #68736e;
-  --muted-strong: #4f5b55;
-  --line: #38433d;
-  --line-soft: #c2cec4;
-  --accent: #263b34;
-  --accent-soft: #d7e3d8;
-  --danger-bg: #fff4ef;
-  --shadow: 0 16px 40px rgba(35, 45, 39, 0.1);
+  --background: #07121f;
+  --surface: #0b1928;
+  --surface-strong: #102337;
+  --surface-muted: #17334a;
+  --ink: #e8f3f4;
+  --muted: #8ea9ba;
+  --muted-strong: #c2d5df;
+  --line: #6093ad;
+  --line-soft: #284a63;
+  --accent: #20b9cf;
+  --accent-soft: #16475b;
+  --danger-bg: #3a1f2a;
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
   --font-ui: Galmuri11, "Noto Sans KR", "Noto Sans JP", "Noto Sans CJK KR",
     "Noto Sans CJK JP", "Apple SD Gothic Neo", sans-serif;
   --font-body: "Noto Sans KR", "Noto Sans JP", "Noto Sans CJK KR",
@@ -29,8 +29,8 @@
 body {
   margin: 0;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.08)),
-    radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.55), transparent 34%),
+    linear-gradient(rgba(17, 48, 71, 0.52), rgba(4, 12, 22, 0.18)),
+    radial-gradient(circle at 20% 0%, rgba(27, 91, 122, 0.32), transparent 34%),
     var(--background);
   color: var(--ink);
   font-family: var(--font-body);
@@ -222,11 +222,11 @@ h2 {
 .ghostButton.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: #ffffff;
+  color: #07121f;
 }
 
 .toolButton.secondary {
-  background: transparent;
+  background: #0c2031;
 }
 
 .toolButton:disabled,
@@ -564,16 +564,16 @@ h2 {
 }
 
 .studyTable tbody tr:nth-child(even) {
-  background: #f6faf2;
+  background: #0d2032;
 }
 
 .studyTable tbody tr:hover {
-  background: #eef5ec;
+  background: #143149;
 }
 
 .studyTable tbody tr.activeRow,
 .studyTable tbody tr.activeRow:nth-child(even) {
-  background: #e7f0e4;
+  background: #17394f;
   box-shadow: inset 4px 0 0 var(--accent);
 }
 
@@ -617,7 +617,7 @@ h2 {
 
 .memoryCell:hover {
   border-color: var(--line-soft);
-  background: rgba(255, 255, 251, 0.9);
+  background: #18364c;
 }
 
 .wordCell {
@@ -644,7 +644,7 @@ h2 {
   min-height: 28px;
   border: 1px dashed var(--muted);
   border-radius: 999px;
-  background: #edf2eb;
+  background: #183449;
   color: var(--muted-strong);
   padding: 4px 11px;
   font-family: var(--font-ui);
@@ -692,7 +692,7 @@ h2 {
   min-height: 34px;
   border: 1.5px dashed var(--muted);
   border-radius: 8px;
-  background: #f4f6f1;
+  background: #173047;
   color: var(--muted-strong);
   font-family: var(--font-ui);
   font-size: 13px;
@@ -727,7 +727,7 @@ h2 {
 
 .exampleRow td {
   border-top: 0;
-  background: rgba(255, 255, 251, 0.72);
+  background: #0d2032;
   padding-top: 0;
 }
 
@@ -756,7 +756,7 @@ h2 {
   min-height: 30px;
   border: 1.5px dashed var(--muted);
   border-radius: 999px;
-  background: #edf2eb;
+  background: #183449;
   color: var(--muted-strong);
   padding: 5px 12px;
   font-family: var(--font-ui);
@@ -774,7 +774,7 @@ h2 {
 
 .examplePlaceholder {
   justify-self: start;
-  background: #f7f8f3;
+  background: #10283b;
 }
 
 .exampleSource {
@@ -828,9 +828,9 @@ h2 {
 }
 
 .notice.error {
-  border-color: #9b4d3e;
+  border-color: #c46d61;
   background: var(--danger-bg);
-  color: #7d3024;
+  color: #ffd3ca;
 }
 
 .tableFooter {
@@ -1484,4 +1484,268 @@ kbd {
   .kanjiPopupClose {
     min-height: 38px;
   }
+}
+
+/* DesktopHub uses a narrow WebView. Keep the study table as a dense table instead
+   of allowing the general mobile breakpoint above to turn every word into a card. */
+.hubMode {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hubMode .appHeader {
+  display: block;
+  margin: 0;
+  padding: 5px;
+  border-radius: 3px;
+}
+
+.hubMode .titleBlock,
+.hubMode .kanjiPanel,
+.hubMode .kanjiSummaryCard,
+.hubMode .stateBar,
+.hubMode .tableFooter,
+.hubMode + .shortcutPanel,
+.hubMode ~ .shortcutPanel,
+.hubMode .shortcutPanel {
+  display: none;
+}
+
+.hubMode .primarySearch {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+}
+
+.hubMode .primarySearch span {
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.hubMode .primarySearch input {
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.hubMode .controlPanel,
+.hubMode .batchPanel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin: 0;
+  border-radius: 3px;
+  padding: 4px;
+}
+
+.hubMode .controlGroup,
+.hubMode .batchControl {
+  display: contents;
+}
+
+.hubMode .groupLabel,
+.hubMode .batchSizeRow label,
+.hubMode .toolsGroup .toolButton:nth-child(3),
+.hubMode .toolsGroup .toolButton:nth-child(5),
+.hubMode .toolsGroup .toolButton:nth-child(6),
+.hubMode .toolsGroup .toolButton:nth-child(7) {
+  display: none;
+}
+
+.hubMode .segmentedControl,
+.hubMode .toolRow,
+.hubMode .batchSizeRow,
+.hubMode .batchPager {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 3px;
+  width: auto;
+}
+
+.hubMode .segmentedControl button,
+.hubMode .toolButton,
+.hubMode .batchSizeRow button,
+.hubMode .batchPager .toolButton,
+.hubMode .batchPager strong {
+  min-height: 24px;
+  border-radius: 2px;
+  padding: 3px 6px;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.hubMode .batchPager strong {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-soft);
+  background: var(--surface-muted);
+}
+
+.hubMode .workspace {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  grid-template-columns: none;
+}
+
+.hubMode .wordPanel {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  border-radius: 3px;
+  padding: 0;
+}
+
+.hubMode .panelHeader {
+  min-height: 28px;
+  padding: 4px 7px;
+}
+
+.hubMode .panelHeader .eyebrow,
+.hubMode .panelHeader h2 {
+  display: inline;
+  font-size: 10px;
+}
+
+.hubMode .wordHeader .countBadge {
+  min-height: 20px;
+  border-radius: 2px;
+  padding: 3px 5px;
+  font-size: 9px;
+}
+
+.hubMode .studyTableWrap {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.hubMode .studyTable {
+  display: table;
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.hubMode .studyTable thead {
+  display: table-header-group;
+}
+
+.hubMode .studyTable tbody {
+  display: table-row-group;
+}
+
+.hubMode .studyTable tbody tr,
+.hubMode .studyTable tbody tr:nth-child(even) {
+  display: table-row;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface-strong);
+  padding: 0;
+}
+
+.hubMode .studyTable tbody tr:nth-child(even) {
+  background: #0d2032;
+}
+
+.hubMode .studyTable tbody tr.activeRow,
+.hubMode .studyTable tbody tr.activeRow:nth-child(even) {
+  background: #17394f;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.hubMode .studyTable th,
+.hubMode .studyTable td,
+.hubMode .studyTable td:nth-child(n) {
+  display: table-cell;
+  border-right: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  padding: 2px 4px;
+  vertical-align: middle;
+}
+
+.hubMode .studyTable th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 4px;
+  font-size: 9px;
+}
+
+.hubMode .studyTable th:nth-child(1),
+.hubMode .studyTable td:nth-child(1) {
+  width: 28px;
+}
+
+.hubMode .studyTable th:nth-child(2),
+.hubMode .studyTable td:nth-child(2) {
+  width: 24%;
+}
+
+.hubMode .studyTable th:nth-child(3),
+.hubMode .studyTable td:nth-child(3) {
+  width: 27%;
+}
+
+.hubMode .studyTable th:nth-child(5),
+.hubMode .studyTable td:nth-child(5),
+.hubMode .studyTable th:nth-child(6),
+.hubMode .studyTable td:nth-child(6) {
+  display: none;
+}
+
+.hubMode .studyTable td::before {
+  display: none;
+}
+
+.hubMode .completeCol input {
+  width: 14px;
+  height: 14px;
+}
+
+.hubMode .memoryCell {
+  display: block;
+  min-height: 25px;
+  overflow: hidden;
+  padding: 3px 2px;
+  border: 0;
+  border-radius: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hubMode .wordCell {
+  font-size: 18px;
+}
+
+.hubMode .readingCell,
+.hubMode .meaningCell {
+  font-size: 11px;
+}
+
+.hubMode .hiddenPrompt {
+  display: block;
+  min-height: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 3px 0;
+  color: var(--muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

@@ -210,6 +210,7 @@ function formatExampleSource(source: string | null) {
 
 export default function Home() {
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [isHubMode, setIsHubMode] = useState(false);
   const [staticData, setStaticData] = useState<StaticVocabData>({
     kanji: [],
     words: [],
@@ -236,6 +237,10 @@ export default function Home() {
   const [activeWordId, setActiveWordId] = useState<number | null>(null);
   const [activeKanjiCharacter, setActiveKanjiCharacter] = useState<string | null>(null);
   const [keyboardScope, setKeyboardScope] = useState<KeyboardScope>("words");
+
+  useEffect(() => {
+    setIsHubMode(new URLSearchParams(window.location.search).get("mode") === "hub");
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -910,7 +915,7 @@ export default function Home() {
   }
 
   return (
-    <main className="shell">
+    <main className={`shell${isHubMode ? " hubMode" : ""}`}>
       <section className="appHeader">
         <div className="titleBlock">
           <p className="eyebrow">GitHub Pages / JLPT N1</p>

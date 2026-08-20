@@ -126,6 +126,18 @@ This folder also contains a Next.js web app for browsing the exported vocabulary
 - Uses `public/vocab-static.json` in the browser, so GitHub Pages can host it without a server.
 - Displays `읽기 미등록` and `뜻 미등록` when database values are `NULL`.
 - Can toggle furigana on example sentences. Furigana segments are generated into `public/vocab-static.json` during export.
+- Uses a dark, high-contrast study UI by default.
+- Supports `?mode=hub` for DesktopHub: a narrow, dense table view that keeps rows as a list instead of turning them into mobile cards. It keeps the existing search, filters, reveal modes, completion state, pagination, shuffle, and keyboard shortcuts while hiding the low-frequency kanji/audio columns for more rows on screen.
+
+### DesktopHub URL
+
+Set the DesktopHub VOCA widget URL to:
+
+```text
+https://kimhyein0214-dot.github.io/jpvoca/?mode=hub
+```
+
+The regular URL without `?mode=hub` keeps the full browser-oriented view.
 
 ### Install and Run
 
