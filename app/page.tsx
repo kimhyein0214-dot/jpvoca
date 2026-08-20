@@ -890,6 +890,10 @@ export default function Home() {
   }
 
   function isVisible(wordId: number, field: CellField) {
+    // DesktopHub is a quick-reference list, not a recall drill. Its narrow
+    // WebView must always expose the reading and meaning without requiring a
+    // separate reveal action or inheriting the regular site's saved drill mode.
+    if (isHubMode) return true;
     if (field === "word" && DEFAULT_WORD_VISIBLE) return true;
     return revealedCells.has(`${wordId}:${field}`);
   }

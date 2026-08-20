@@ -1553,6 +1553,7 @@ kbd {
 
 .hubMode .groupLabel,
 .hubMode .batchSizeRow label,
+.hubMode .memoryGroup,
 .hubMode .toolsGroup .toolButton:nth-child(3),
 .hubMode .toolsGroup .toolButton:nth-child(5),
 .hubMode .toolsGroup .toolButton:nth-child(6),
