@@ -462,6 +462,11 @@ export default function Home() {
     () => staticData.words.filter((word) => completedWords.has(word.id)).length,
     [completedWords, staticData.words],
   );
+  const vocabularyTotal = staticData.words.length;
+  const completedWordPercent =
+    vocabularyTotal === 0
+      ? 0
+      : Math.round((completedWordTotal / vocabularyTotal) * 1000) / 10;
 
   const completedShownCount = pageWords.filter((word) =>
     completedWords.has(word.id),
@@ -1180,6 +1185,26 @@ export default function Home() {
               <h2>{selectedLabel}</h2>
             </div>
             <div className="countBadge">{visibleCountLabel}</div>
+          </div>
+
+          <div
+            className="hubProgress"
+            role="progressbar"
+            aria-label="전체 단어 암기 진행률"
+            aria-valuemin={0}
+            aria-valuemax={vocabularyTotal}
+            aria-valuenow={completedWordTotal}
+          >
+            <div className="hubProgressLabel">
+              <span>MEMORIZED</span>
+              <strong>
+                {completedWordTotal.toLocaleString()} / {vocabularyTotal.toLocaleString()}
+              </strong>
+              <b>{completedWordPercent.toFixed(1)}%</b>
+            </div>
+            <span className="hubProgressTrack">
+              <span style={{ width: `${completedWordPercent}%` }} />
+            </span>
           </div>
 
           <div className="stateBar" aria-label="현재 학습 상태">
