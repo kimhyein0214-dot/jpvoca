@@ -1594,6 +1594,7 @@ kbd {
 .hubMode .workspace {
   display: flex;
   flex: none;
+  width: 100%;
   min-height: auto;
   overflow: visible;
   grid-template-columns: none;
@@ -1602,6 +1603,7 @@ kbd {
 .hubMode .wordPanel {
   display: flex;
   flex: none;
+  width: 100%;
   min-height: auto;
   overflow: visible;
   flex-direction: column;
@@ -1630,6 +1632,7 @@ kbd {
 .hubMode .studyTableWrap {
   display: block;
   flex: none;
+  width: 100%;
   height: auto;
   min-height: auto;
   overflow: visible;
@@ -1754,4 +1757,92 @@ kbd {
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Do not rely on the browser's table width algorithm in the narrow WPF
+   WebView. It can retain the mobile table's intrinsic width and push reading /
+   meaning off-screen. A four-column grid keeps every quick-reference field in
+   view: complete, word, reading, meaning. */
+.hubMode .studyTable {
+  display: grid;
+  grid-template-columns: 32px minmax(74px, 1.15fr) minmax(70px, 1fr) minmax(74px, 1.2fr);
+  width: 100%;
+  min-width: 0;
+  table-layout: auto;
+}
+
+.hubMode .studyTable thead,
+.hubMode .studyTable tbody,
+.hubMode .studyTable tr,
+.hubMode .studyTable tbody tr,
+.hubMode .studyTable tbody tr:nth-child(even) {
+  display: contents;
+}
+
+.hubMode .studyTable th,
+.hubMode .studyTable td,
+.hubMode .studyTable td:nth-child(n) {
+  display: block !important;
+  width: auto !important;
+  min-width: 0;
+  border-right: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  padding: 4px 5px;
+  background: var(--surface-strong);
+}
+
+.hubMode .studyTable th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 5px 4px;
+  background: var(--surface-muted);
+  font-size: 9px;
+}
+
+.hubMode .studyTable tbody tr:nth-child(even) td {
+  background: #0d2032;
+}
+
+.hubMode .studyTable tbody tr.activeRow td,
+.hubMode .studyTable tbody tr.activeRow:nth-child(even) td {
+  background: #17394f;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.hubMode .studyTable th:nth-child(5),
+.hubMode .studyTable td:nth-child(5),
+.hubMode .studyTable th:nth-child(6),
+.hubMode .studyTable td:nth-child(6) {
+  display: none !important;
+}
+
+.hubMode .studyTable td::before {
+  display: none !important;
+}
+
+.hubMode .studyTable td:nth-child(n) {
+  /* Cancel the phone-card grid areas declared in the general mobile rules. */
+  grid-area: auto !important;
+}
+
+.hubMode .studyTable .memoryCell {
+  min-height: 24px;
+  overflow: visible;
+  padding: 1px 0;
+  text-align: left;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.hubMode .studyTable .wordCell {
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.hubMode .studyTable .readingCell,
+.hubMode .studyTable .meaningCell {
+  font-size: 11px;
+  line-height: 1.35;
 }
