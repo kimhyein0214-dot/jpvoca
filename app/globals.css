@@ -1590,15 +1590,20 @@ kbd {
 
 .hubMode .workspace {
   display: flex;
-  flex: 1 1 auto;
+  /* The WebView can be much shorter than a normal browser viewport. Giving the
+     list an explicit zero flex basis prevents its table content from expanding
+     the parent and swallowing the only scrollable area. */
+  flex: 1 1 0;
   min-height: 0;
+  overflow: hidden;
   grid-template-columns: none;
 }
 
 .hubMode .wordPanel {
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
+  overflow: hidden;
   flex-direction: column;
   border-radius: 3px;
   padding: 0;
@@ -1624,9 +1629,13 @@ kbd {
 
 .hubMode .studyTableWrap {
   display: block;
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  height: 0;
   min-height: 0;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   margin: 0;
   border: 0;
   border-radius: 0;
