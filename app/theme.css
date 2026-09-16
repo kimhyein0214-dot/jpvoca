@@ -1,0 +1,463 @@
+/* Visual bridge: vocabulary page -> reading handbook */
+:root {
+  --background: #f5f7fb;
+  --surface: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-muted: #eef4ff;
+  --ink: #1d2127;
+  --muted: #667085;
+  --muted-strong: #475467;
+  --line: #d9e3f5;
+  --line-soft: #e7edf8;
+  --accent: #2f6fff;
+  --accent-soft: #eef4ff;
+  --danger-bg: #fff1f2;
+  --shadow: 0 8px 24px rgba(47, 111, 255, 0.08);
+  --font-ui: "Noto Sans KR", "Noto Sans JP", "Noto Sans CJK KR",
+    "Noto Sans CJK JP", "Apple SD Gothic Neo", sans-serif;
+  --font-body: "Noto Sans KR", "Noto Sans JP", "Noto Sans CJK KR",
+    "Noto Sans CJK JP", "Apple SD Gothic Neo", sans-serif;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  background: var(--background) !important;
+  color: var(--ink);
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid rgba(47, 111, 255, 0.18);
+}
+
+.shell {
+  width: min(1180px, 100%);
+  padding: 18px 14px 104px;
+}
+
+.appHeader {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-bottom: 16px;
+  gap: 18px;
+}
+
+.titleBlock {
+  gap: 5px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+h1 {
+  font-family: var(--font-body);
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 850;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+
+h2 {
+  font-family: var(--font-body);
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.subtitle,
+.searchBox,
+.kanjiSearchBox,
+.groupLabel {
+  color: var(--muted);
+  font-family: var(--font-body);
+}
+
+.primarySearch {
+  gap: 7px;
+}
+
+.searchBox input,
+.kanjiSearchBox input,
+.batchSizeRow input {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.primarySearch input {
+  height: 50px;
+  font-size: 15px;
+  box-shadow: var(--shadow);
+}
+
+.controlPanel,
+.batchPanel,
+.kanjiPanel,
+.wordPanel {
+  border: 1px solid var(--line) !important;
+  border-radius: 20px !important;
+  background: var(--surface) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.controlPanel,
+.batchPanel {
+  padding: 12px;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.controlGroup,
+.batchControl,
+.kanjiSummaryCard {
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: var(--accent-soft);
+  padding: 10px;
+}
+
+.segmentedControl button,
+.toolButton,
+.batchSizeRow button,
+.batchSizeRow label,
+.ghostButton,
+.countBadge {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 750;
+  box-shadow: none;
+}
+
+.segmentedControl button:hover,
+.toolButton:hover,
+.batchSizeRow button:hover,
+.ghostButton:hover {
+  background: var(--accent-soft);
+}
+
+.segmentedControl button.active,
+.toolButton.active,
+.batchSizeRow button.active,
+.ghostButton.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.toolButton.secondary {
+  background: var(--surface);
+}
+
+.batchPager strong,
+.countBadge,
+.stateChip {
+  border-color: var(--line-soft);
+  background: var(--accent-soft);
+  color: var(--muted-strong);
+}
+
+.kanjiSummaryCard strong,
+.selectedKanjiCard strong {
+  color: var(--ink);
+}
+
+.workspace {
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.panelHeader {
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--surface);
+}
+
+.sidebarTools {
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.selectedKanjiCard,
+.kanjiChar,
+.inlineKanji button,
+.audioButton,
+.notice,
+.stateChip,
+.memoryCell,
+.exampleToggle,
+.examplePlaceholder,
+.shortcutItem,
+kbd {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.selectedKanjiCard,
+.kanjiChar,
+.inlineKanji button,
+.audioButton,
+.notice {
+  border-color: var(--line);
+  border-radius: 12px;
+}
+
+.kanjiItem {
+  border-radius: 12px;
+  color: var(--ink);
+}
+
+.kanjiItem:hover {
+  border-color: var(--line);
+  background: var(--accent-soft);
+}
+
+.kanjiItem.active {
+  border-color: #b9ccff;
+  background: var(--accent-soft);
+}
+
+.kanjiItem.keyboardActive {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.kanjiProgressTrack,
+.hubProgressTrack {
+  border-color: var(--line-soft);
+  background: #e9effa;
+}
+
+.stateBar {
+  border-color: var(--line-soft);
+  border-radius: 14px;
+  background: var(--accent-soft);
+}
+
+.stateChip.strong {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.studyTableWrap {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.studyTable th {
+  border-color: var(--line);
+  background: var(--accent-soft);
+  color: var(--muted-strong);
+  font-family: var(--font-body);
+}
+
+.studyTable td {
+  border-color: var(--line-soft);
+}
+
+.studyTable tbody tr,
+.studyTable tbody tr:nth-child(even) {
+  background: var(--surface);
+}
+
+.studyTable tbody tr:nth-child(even) {
+  background: #fbfcff;
+}
+
+.studyTable tbody tr:hover,
+.studyTable tbody tr.activeRow,
+.studyTable tbody tr.activeRow:nth-child(even) {
+  background: var(--accent-soft);
+}
+
+.memoryCell {
+  color: var(--ink);
+  border-radius: 10px;
+}
+
+.memoryCell:hover {
+  border-color: var(--line);
+  background: var(--accent-soft);
+}
+
+.readingCell,
+.exampleKo,
+.exampleSource {
+  color: var(--muted-strong);
+}
+
+.hiddenPrompt,
+.noKanjiBadge,
+.exampleToggle,
+.examplePlaceholder {
+  border-color: #b8c7df;
+  background: #f3f6fb;
+  color: var(--muted-strong);
+}
+
+.inlineKanji button,
+.audioButton {
+  color: var(--accent);
+}
+
+.inlineKanji button:hover,
+.inlineKanji button.active,
+.audioButton:hover,
+.exampleToggle.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.exampleRow td {
+  background: #fbfcff;
+}
+
+.exampleBox {
+  border-left-color: #b9ccff;
+}
+
+.notice.error {
+  border-color: #ffc2c7;
+  background: var(--danger-bg);
+  color: #9b1c2c;
+}
+
+.shortcutPanel {
+  width: min(1180px, calc(100vw - 28px));
+  right: 14px;
+  left: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 28px rgba(47, 111, 255, 0.10);
+}
+
+kbd {
+  border-color: #cbd8ee;
+  background: var(--accent-soft);
+}
+
+.loadMoreButton {
+  border-color: var(--accent);
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+}
+
+.loadMoreButton:hover:not(:disabled) {
+  background: #245bd8;
+  color: #fff;
+}
+
+.kanjiPopup {
+  border-color: var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.kanjiPopupMain,
+.kanjiPopupChar,
+.kanjiPopupClose {
+  border-color: var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.kanjiPopupMain:hover {
+  background: var(--accent-soft);
+}
+
+@media (max-width: 920px) {
+  .shell {
+    padding: 16px 12px 104px;
+  }
+}
+
+@media (max-width: 700px) {
+  .shell {
+    padding: 10px 10px 40px;
+  }
+
+  .controlPanel,
+  .batchPanel,
+  .kanjiPanel,
+  .wordPanel {
+    border-radius: 18px !important;
+    box-shadow: var(--shadow) !important;
+  }
+
+  .appHeader {
+    padding: 0 !important;
+    margin-bottom: 14px;
+  }
+
+  .studyTable tbody tr,
+  .studyTable tbody tr:nth-child(even) {
+    border-color: var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: 0 5px 16px rgba(47, 111, 255, 0.05);
+  }
+
+  .studyTable tbody tr.activeRow,
+  .studyTable tbody tr.activeRow:nth-child(even) {
+    background: var(--accent-soft);
+  }
+
+  .shortcutPanel {
+    border-radius: 16px;
+    background: var(--surface);
+  }
+}
+
+/* Keep DesktopHub dense while inheriting the same blue palette. */
+.hubMode .hubProgress,
+.hubMode .studyTable th,
+.hubMode .studyTable td,
+.hubMode .studyTable td:nth-child(n) {
+  background: var(--surface);
+}
+
+.hubMode .studyTable th {
+  background: var(--accent-soft);
+}
+
+.hubMode .studyTable tbody tr:nth-child(even) td {
+  background: #fbfcff;
+}
+
+.hubMode .studyTable tbody tr.activeRow td,
+.hubMode .studyTable tbody tr.activeRow:nth-child(even) td {
+  background: var(--accent-soft);
+}
+
+.hubMode .hubProgressTrack {
+  background: #e9effa;
+  box-shadow: none;
+}
+
+.hubMode .hubProgressTrack > span {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--accent) 0 7px,
+    #d8e4ff 7px 9px
+  );
+}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./theme.css";
 
 export const metadata: Metadata = {
   title: "N1 Kanji Vocabulary",
@@ -13,13 +14,29 @@ export default function RootLayout({
 }>) {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
+  const tabStyle = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: "76px",
+    minHeight: "38px",
+    padding: "8px 13px",
+    border: "1px solid #d9e3f5",
+    borderRadius: "999px",
+    fontFamily: "Noto Sans KR, Noto Sans JP, sans-serif",
+    fontSize: "13px",
+    fontWeight: 800,
+    textDecoration: "none",
+    boxShadow: "0 8px 24px rgba(47,111,255,.08)",
+  } as const;
+
   return (
     <html lang="ko">
       <body>
         <nav
           aria-label="학습 메뉴"
           style={{
-            width: "min(1540px, calc(100% - 44px))",
+            width: "min(1180px, calc(100% - 28px))",
             margin: "18px auto 0",
             display: "flex",
             gap: "8px",
@@ -30,19 +47,10 @@ export default function RootLayout({
           <a
             href={`${basePath}/`}
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: "38px",
-              padding: "8px 13px",
-              border: "1.5px solid #6093ad",
-              borderRadius: "999px",
-              background: "#20b9cf",
-              color: "#07121f",
-              fontFamily: "Galmuri11, Noto Sans KR, Noto Sans JP, sans-serif",
-              fontSize: "13px",
-              fontWeight: 900,
-              textDecoration: "none",
+              ...tabStyle,
+              background: "#2f6fff",
+              borderColor: "#2f6fff",
+              color: "#ffffff",
             }}
           >
             단어장
@@ -50,19 +58,9 @@ export default function RootLayout({
           <a
             href={`${basePath}/reading/`}
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: "38px",
-              padding: "8px 13px",
-              border: "1.5px solid #6093ad",
-              borderRadius: "999px",
-              background: "#0c2031",
-              color: "#e8f3f4",
-              fontFamily: "Galmuri11, Noto Sans KR, Noto Sans JP, sans-serif",
-              fontSize: "13px",
-              fontWeight: 900,
-              textDecoration: "none",
+              ...tabStyle,
+              background: "#ffffff",
+              color: "#1d2127",
             }}
           >
             독해
