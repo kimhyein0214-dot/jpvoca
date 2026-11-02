@@ -1,4 +1,4 @@
-/* Generates only ignored, local preview assets. Never writes private content to public/. */
+/* Generates checked-in reading assets and the local QA preview from reviewed source data. */
 const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
@@ -36,7 +36,7 @@ kuromoji.builder({dicPath:path.join(root,'.tools/reading-qa/node_modules/kuromoj
  }
  const data=[];
  for(let i=1;i<=12;i++){
-   const p=JSON.parse(fs.readFileSync(path.join(root,`.private-source/${String(i).padStart(2,'0')}.json`),'utf8'));
+   const p=JSON.parse(fs.readFileSync(path.join(root,`data/reading/medium/${String(i).padStart(2,'0')}.json`),'utf8'));
    assert.equal(p.id,i);assert.equal(p.page,388+2*i);assert.equal(p.questions.length,2);
    p.paragraphStarts=paragraphs[i-1];
    const used=new Set();
@@ -68,9 +68,13 @@ kuromoji.builder({dicPath:path.join(root,'.tools/reading-qa/node_modules/kuromoj
  const preview=path.join(root,'.private-preview/jpvoca/reading');
  fs.mkdirSync(path.join(preview,'data'),{recursive:true});
  for(const file of ['index.html','collections.js'])fs.copyFileSync(path.join(root,'public/reading',file),path.join(preview,file));
- const instruction=JSON.parse(fs.readFileSync(path.join(root,'.private-source/instruction.json'),'utf8'));
+ const instruction=JSON.parse(fs.readFileSync(path.join(root,'data/reading/medium/instruction.json'),'utf8'));
  instruction[0]=ruby(instruction[0]);
- fs.writeFileSync(path.join(preview,'data/medium.js'),'window.JLPT_MEDIUM_INSTRUCTION = '+JSON.stringify(instruction)+';\nwindow.JLPT_MEDIUM = '+JSON.stringify(data)+';\n');
+ const asset='window.JLPT_MEDIUM_INSTRUCTION = '+JSON.stringify(instruction)+';\nwindow.JLPT_MEDIUM = '+JSON.stringify(data)+';\n';
+ fs.writeFileSync(path.join(preview,'data/medium.js'),asset);
+ fs.mkdirSync(path.join(root,'public/reading/data'),{recursive:true});
+ fs.writeFileSync(path.join(root,'public/reading/data/medium.js'),asset);
+ fs.mkdirSync(path.join(root,'.private-source'),{recursive:true});
  fs.writeFileSync(path.join(root,'.private-source/readings.tsv'),[...readings].sort((a,b)=>a[0].localeCompare(b[0],'ja')).map(x=>x.join('\t')).join('\n'));
  fs.writeFileSync(path.join(root,'.private-source/unknown-readings.json'),JSON.stringify([...unknown]));
  console.log(JSON.stringify({passages:data.length,questions:data.flatMap(p=>p.questions).length,choices:data.flatMap(p=>p.questions).flatMap(q=>q.choices).length,notes:data.reduce((n,p)=>n+p.notes.length,0),readings:readings.size,unknown:[...unknown],preview}));

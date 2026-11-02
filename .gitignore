@@ -6,4 +6,6 @@ venv/
 node_modules/
 .next/
 .tools/
+.private-source/
+.private-preview/
 npm-debug.log*

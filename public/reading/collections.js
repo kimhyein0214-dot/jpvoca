@@ -1,4 +1,4 @@
-/* Medium data is supplied only by the private-preview build until rights are cleared. */
+/* Reviewed N1 medium reading collection; answer keys remain provisional. */
 (() => {
   'use strict';
   const byId = id => document.getElementById(id);
@@ -47,11 +47,11 @@
     try {
       if (!mediumLoaded) await load();
       if (!activeMedium) return;
-      status.textContent = '로컬·비공개 학습 미리보기 · 중문 12지문 / 24문항 · 공개 사용 허용 범위 미확인 · 모든 답안은 잠정 추론입니다.';
+      status.textContent = '중문 12지문 / 24문항 · 모든 답안은 잠정 추론이며 공식 정답표 확인이 필요합니다.';
       const target = byId(location.hash.slice(1));
       if (target) target.scrollIntoView();
     } catch(e) {
-      if (activeMedium) status.textContent = '중문 자료는 공개 사용 허용 범위 확인 전까지 로컬·비공개 미리보기에서만 제공됩니다.';
+      if (activeMedium) status.textContent = '중문 자료를 불러오지 못했습니다. 새로고침하거나 단문을 선택해 주세요.';
     }
   }
   addEventListener('hashchange', select);

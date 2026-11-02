@@ -1,7 +1,7 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),cp=require('node:child_process');
 const root=path.resolve(__dirname,'..');
 const {chromium}=require(path.join(root,'.tools/reading-qa/node_modules/playwright'));
-const base='http://127.0.0.1:8765/jpvoca/reading/';
+const base=process.env.READING_TEST_URL||'http://127.0.0.1:8765/jpvoca/reading/';
 (async()=>{
  const original=cp.execFileSync('git',['show','origin/main:public/reading/index.html'],{cwd:root,encoding:'utf8'});
  const current=fs.readFileSync(path.join(root,'public/reading/index.html'),'utf8');
@@ -20,7 +20,7 @@ const base='http://127.0.0.1:8765/jpvoca/reading/';
  assert.equal(await page.locator('#medium-passages .source sup').count(),16);
  assert.equal(await page.locator('#medium-nav a').count(),12);
  for(let i=1;i<=12;i++){
-   const raw=JSON.parse(fs.readFileSync(path.join(root,`.private-source/${String(i).padStart(2,'0')}.json`),'utf8'));
+   const raw=JSON.parse(fs.readFileSync(path.join(root,`data/reading/medium/${String(i).padStart(2,'0')}.json`),'utf8'));
    const read=async selector=>page.locator(selector).evaluateAll(els=>els.map(el=>{const copy=el.cloneNode(true);copy.querySelectorAll('rt,sup').forEach(x=>x.remove());return copy.textContent;}));
    assert.deepEqual(await read(`#m${i} .source .sent:not(.note) .jp`),raw.sentences.map(x=>x[0]));
    assert.deepEqual(await read(`#m${i} .note .jp`),raw.notes.map(x=>x[0]));
@@ -70,7 +70,7 @@ const base='http://127.0.0.1:8765/jpvoca/reading/';
  await page.goto(base+'#m12');await page.waitForSelector('#m12');assert(await page.locator('#medium-passages').isVisible());
  await page.route('**/data/medium.js',route=>route.abort());
  await page.goto(base+'?missing-data=1#medium');
- await page.waitForFunction(()=>document.getElementById('collection-status').textContent.includes('미리보기에서만 제공'));
+ await page.waitForFunction(()=>document.getElementById('collection-status').textContent.includes('불러오지 못했습니다'));
  await page.click('#short-link');await page.locator('#short-passages').waitFor({state:'visible'});
  assert.equal(await page.locator('#short-passages section').count(),12);
  assert.deepEqual(errors,[]);await browser.close();
