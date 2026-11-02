@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>JLPT N1 단문내용이해 12지문</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JLPT N1 독해 · 단문 / 중문</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--line:#d9e3f5;--pink:#2f6fff;--soft:#eef4ff;--text:#1d2127;--muted:#667085;--shadow:0 8px 24px rgba(47,111,255,.08);--jp-size:15px;--ko-size:13px;}
 *{box-sizing:border-box}
@@ -52,12 +52,14 @@ body.hide-furigana rt{visibility:hidden;font-size:0;line-height:0}
 .to-top{position:fixed;right:16px;bottom:16px;width:48px;height:48px;border-radius:999px;background:var(--pink);color:#fff;text-decoration:none;display:grid;place-items:center;font-size:12px;font-weight:800;box-shadow:0 10px 22px rgba(47,111,255,.25)}
 @media (max-width:420px){.wrap{padding-left:10px;padding-right:10px}.block{padding:14px 12px}}
 .study-box{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--soft) 65%,var(--card));overflow:hidden}.study-box>summary{cursor:pointer;list-style:none;padding:12px 14px;font-weight:800;color:var(--pink)}.study-box>summary::-webkit-details-marker{display:none}.study-box>summary::after{content:"+";float:right}.study-box[open]>summary::after{content:"−"}.study-content{padding:0 14px 14px}.study-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.study-card{border:1px solid var(--line);border-radius:12px;padding:11px;background:var(--card)}.study-card h3{margin:0 0 8px;font-size:14px;color:var(--pink)}.study-list{margin:0;padding-left:18px}.study-list li{margin:6px 0;line-height:1.55;font-size:13px}.study-list b{font-family:"Noto Serif CJK JP","Noto Serif JP",serif}.reading-point{margin-top:12px;padding:11px 12px;border-left:4px solid var(--pink);background:var(--card);border-radius:8px;font-size:13px;line-height:1.65}.reading-point strong{color:var(--pink)}@media (max-width:600px){.study-grid{grid-template-columns:1fr}}
+
+[hidden]{display:none!important}.collection-switch{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.collection-switch a[aria-current="page"]{background:var(--pink);color:var(--card)}.collection-status{font-size:13px;color:var(--muted);line-height:1.7}.collection-status a{color:var(--pink)}.jp,.qjp,.choice-jp{overflow-wrap:anywhere}.head h2{overflow-wrap:anywhere}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--pink);outline-offset:3px}.source u{text-underline-offset:4px}.paragraph-break{margin-top:20px}.source-ref{font-size:12px;color:var(--muted)}
 </style></head>
 <body>
 <div class="wrap"><a id="top"></a>
 <header class="top">
   <nav class="site-switch" aria-label="학습 메뉴"><a href="../">단어장</a><span>독해</span></nav>
-  <div class="kicker">JLPT N1 단문내용이해</div>
+  <div class="kicker">JLPT N1 독해 · 내용이해</div>
   <h1>전지문 바로보기</h1>
   <p class="desc">지문·선지마다 한국어 뜻을 바로 아래 붙였고, 후리가나·한국어 뜻·다크모드·글자크기를 각각 조절할 수 있어.</p>
   <div class="toolbar">
@@ -68,9 +70,13 @@ body.hide-furigana rt{visibility:hidden;font-size:0;line-height:0}
     <button id="showAllAnswers" type="button">정답 전체 펼치기</button>
     <button id="hideAllAnswers" type="button">정답 전체 숨기기</button>
   </div>
-  <nav class="nav"><a class="chip" href="#p1">01 아이의 거짓말</a><a class="chip" href="#p2">02 과학과 AI</a><a class="chip" href="#p3">03 역컬처쇼크</a><a class="chip" href="#p4">04 진로상담 일정 변경 메일</a><a class="chip" href="#p5">05 인간의 적응력과 지능</a><a class="chip" href="#p6">06 빵집 임시 휴업 공지</a><a class="chip" href="#p7">07 지속 가능한 이상적 주거</a><a class="chip" href="#p8">08 워크라이프밸런스</a><a class="chip" href="#p9">09 분노의 수치화</a><a class="chip" href="#p10">10 SNS와 상상력</a><a class="chip" href="#p11">11 아이의 뇌 발달과 체험</a><a class="chip" href="#p12">12 절판 도서 보관 안내 메일</a></nav>
+  <nav class="collection-switch" aria-label="독해 유형"><a class="chip" id="short-link" href="#short" aria-current="page">단문 12지문</a><a class="chip" id="medium-link" href="#medium">중문 12지문</a></nav>
+  <p id="collection-status" class="collection-status" role="status"></p>
+  <nav class="nav" id="short-nav" aria-label="단문 지문 이동"><a class="chip" href="#p1">01 아이의 거짓말</a><a class="chip" href="#p2">02 과학과 AI</a><a class="chip" href="#p3">03 역컬처쇼크</a><a class="chip" href="#p4">04 진로상담 일정 변경 메일</a><a class="chip" href="#p5">05 인간의 적응력과 지능</a><a class="chip" href="#p6">06 빵집 임시 휴업 공지</a><a class="chip" href="#p7">07 지속 가능한 이상적 주거</a><a class="chip" href="#p8">08 워크라이프밸런스</a><a class="chip" href="#p9">09 분노의 수치화</a><a class="chip" href="#p10">10 SNS와 상상력</a><a class="chip" href="#p11">11 아이의 뇌 발달과 체험</a><a class="chip" href="#p12">12 절판 도서 보관 안내 메일</a></nav>
+  <nav class="nav" id="medium-nav" aria-label="중문 지문 이동" hidden></nav>
 </header>
 
+<main id="short-passages" aria-label="단문 12지문">
     <section id="p1" class="block">
       <div class="head"><div class="no">01</div><h2>아이의 거짓말</h2></div>
       <div class="source"><div class="sent "><p class="jp"><ruby>子<rt>こ</rt></ruby>どもが<ruby>成長<rt>せいちょう</rt></ruby>する<ruby>過程<rt>かてい</rt></ruby>でつく<ruby>嘘<rt>うそ</rt></ruby>は、<ruby>親<rt>おや</rt></ruby>にしてみると<ruby>心配<rt>しんぱい</rt></ruby>の<ruby>種<rt>たね</rt></ruby>かもしれませんが、<ruby>子<rt>こ</rt></ruby>どもにしてみれば<ruby>自己防衛<rt>じこぼうえい</rt></ruby>や<ruby>想像力<rt>そうぞうりょく</rt></ruby>の<ruby>一環<rt>いっかん</rt></ruby>です。</p><p class="tr">아이가 성장하는 과정에서 하는 거짓말은 부모 입장에서는 걱정거리일지도 모르지만, 아이 입장에서는 자기방어나 상상력의 한 부분입니다.</p></div><div class="sent "><p class="jp"><ruby>例<rt>たと</rt></ruby>えば<ruby>学校<rt>がっこう</rt></ruby>の<ruby>宿題<rt>しゅくだい</rt></ruby>をやり<ruby>忘<rt>わす</rt></ruby>れた<ruby>理由<rt>りゆう</rt></ruby>を「やったけど<ruby>家<rt>いえ</rt></ruby>に<ruby>忘<rt>わす</rt></ruby>れた」と<ruby>言<rt>い</rt></ruby>うのは、<ruby>叱<rt>しか</rt></ruby>られるのを<ruby>避<rt>さ</rt></ruby>けるための<ruby>嘘<rt>うそ</rt></ruby>にほかなりません。</p><p class="tr">예를 들어 학교 숙제를 하는 것을 깜빡한 이유로 “했는데 집에 두고 왔어”라고 말하는 것은, 혼나는 것을 피하기 위한 거짓말에 다름 아닙니다.</p></div><div class="sent "><p class="jp">こうした<ruby>嘘<rt>うそ</rt></ruby>は<ruby>成長<rt>せいちょう</rt></ruby>の<ruby>一部<rt>いちぶ</rt></ruby>であり、やがて<ruby>正直<rt>しょうじき</rt></ruby>さの<ruby>重要性<rt>じゅうようせい</rt></ruby>を<ruby>学<rt>まな</rt></ruby>ぶきっかけとなります。</p><p class="tr">이러한 거짓말은 성장의 일부이며, 머지않아 정직함의 중요성을 배우는 계기가 됩니다.</p></div><div class="sent "><p class="jp"><ruby>親<rt>おや</rt></ruby>としては、<ruby>嘘<rt>うそ</rt></ruby>を<ruby>咎<rt>とが</rt></ruby>めるだけでなく、なぜ<ruby>嘘<rt>うそ</rt></ruby>をついたのかを<ruby>理解<rt>りかい</rt></ruby>した<ruby>上<rt>うえ</rt></ruby>で、<ruby>子<rt>こ</rt></ruby>どもが<ruby>安心<rt>あんしん</rt></ruby>して<ruby>真実<rt>しんじつ</rt></ruby>を<ruby>話<rt>はな</rt></ruby>せる<ruby>環境<rt>かんきょう</rt></ruby>を<ruby>整<rt>ととの</rt></ruby>えることが<ruby>大切<rt>たいせつ</rt></ruby>です。</p><p class="tr">부모로서는 거짓말을 나무라기만 할 것이 아니라, 왜 거짓말을 했는지를 이해한 뒤 아이가 안심하고 진실을 말할 수 있는 환경을 마련하는 것이 중요합니다.</p></div><div class="sent note"><p class="jp note-jp">（<ruby>注<rt>ちゅう</rt></ruby>）<ruby>一環<rt>いっかん</rt></ruby>：<ruby>全体<rt>ぜんたい</rt></ruby>としてのつながりの<ruby>中<rt>なか</rt></ruby>の<ruby>一部分<rt>いちぶぶん</rt></ruby></p><p class="tr">주) 일환: 전체적인 연결 속의 한 부분</p></div></div>
@@ -162,6 +168,8 @@ body.hide-furigana rt{visibility:hidden;font-size:0;line-height:0}
       <div class="question-wrap"><div class="question"><div class="qjp">このメールで<ruby>最<rt>もっと</rt></ruby>も<ruby>伝<rt>つた</rt></ruby>えたいことは<ruby>何<rt>なん</rt></ruby>か。</div><div class="tr qtr">이 이메일에서 가장 전달하고 싶은 것은 무엇인가.</div><ol class="choices"><li><div class="choice-jp"><ruby>特定<rt>とくてい</rt></ruby>の<ruby>書籍<rt>しょせき</rt></ruby>が6<ruby>月<rt>がつ</rt></ruby>30<ruby>日<rt>にち</rt></ruby>をもって<ruby>絶版<rt>ぜっぱん</rt></ruby>となってしまい、<ruby>在庫<rt>ざいこ</rt></ruby>が<ruby>全<rt>まった</rt></ruby>くないこと</div><div class="tr choice-tr">특정 도서가 6월 30일부로 절판되어 재고가 전혀 없다는 것</div></li><li><div class="choice-jp"><ruby>書籍<rt>しょせき</rt></ruby>の<ruby>取<rt>と</rt></ruby>り<ruby>置<rt>お</rt></ruby>きを<ruby>希望<rt>きぼう</rt></ruby>する<ruby>場合<rt>ばあい</rt></ruby>は、<ruby>前<rt>まえ</rt></ruby>もって<ruby>店舗宛<rt>てんぽあ</rt></ruby>てのメールで<ruby>伝<rt>つた</rt></ruby>えてほしいこと</div><div class="tr choice-tr">도서 보관을 희망하는 경우 미리 매장 앞으로 이메일을 보내 알려 달라는 것</div></li><li><div class="choice-jp"><ruby>書籍<rt>しょせき</rt></ruby>の<ruby>取<rt>と</rt></ruby>り<ruby>置<rt>お</rt></ruby>きを<ruby>希望<rt>きぼう</rt></ruby>する<ruby>場合<rt>ばあい</rt></ruby>は、7<ruby>月<rt>がつ</rt></ruby>11<ruby>日<rt>にち</rt></ruby>までに<ruby>意向<rt>いこう</rt></ruby>を<ruby>店<rt>みせ</rt></ruby>に<ruby>連絡<rt>れんらく</rt></ruby>してほしいこと</div><div class="tr choice-tr">도서 보관을 희망하는 경우 7월 11일까지 그 의사를 매장에 연락해 달라는 것</div></li><li><div class="choice-jp"><ruby>書籍<rt>しょせき</rt></ruby>の<ruby>取<rt>と</rt></ruby>り<ruby>置<rt>お</rt></ruby>きを<ruby>希望<rt>きぼう</rt></ruby>する<ruby>場合<rt>ばあい</rt></ruby>は、3<ruby>日以内<rt>みっかいない</rt></ruby>に<ruby>店舗<rt>てんぽ</rt></ruby>に<ruby>受<rt>う</rt></ruby>け<ruby>取<rt>と</rt></ruby>りに<ruby>来<rt>き</rt></ruby>てほしいこと</div><div class="tr choice-tr">도서 보관을 희망하는 경우 3일 이내에 매장으로 받으러 와 달라는 것</div></li></ol></div></div>
       <details class="answer-box"><summary>정답 보기</summary><div class="answer">정답: <strong>③</strong></div></details>
     </section>
+</main>
+<main id="medium-passages" aria-label="중문 12지문" hidden></main>
 </div>
 <a class="to-top" href="#top">TOP</a>
 <script>
@@ -172,23 +180,24 @@ const themeBtn=document.getElementById('themeToggle');
 const downBtn=document.getElementById('fontDown');
 const upBtn=document.getElementById('fontUp');
 const sizeLabel=document.getElementById('sizeLabel');
-const answers=document.querySelectorAll('.answer-box');
+const answers=()=>document.querySelectorAll('main:not([hidden]) .answer-box');
 let scale=parseFloat(localStorage.getItem('jlpt_font_scale')||'1');
 
-function applyFurigana(show){body.classList.toggle('hide-furigana',!show);furBtn.classList.toggle('active',show);furBtn.textContent=show?'후리가나 ON':'후리가나 OFF';localStorage.setItem('jlpt_furigana',show?'on':'off')}
-function applyTranslation(show){body.classList.toggle('hide-trans',!show);trBtn.classList.toggle('active',show);trBtn.textContent=show?'한국어 뜻 ON':'한국어 뜻 OFF';localStorage.setItem('jlpt_translation',show?'on':'off')}
-function applyTheme(dark){body.classList.toggle('dark',dark);themeBtn.classList.toggle('active',dark);themeBtn.textContent=dark?'다크모드 ON':'다크모드 OFF';localStorage.setItem('jlpt_theme',dark?'dark':'light')}
+function applyFurigana(show){body.classList.toggle('hide-furigana',!show);furBtn.classList.toggle('active',show);furBtn.setAttribute('aria-pressed',String(show));furBtn.textContent=show?'후리가나 ON':'후리가나 OFF';localStorage.setItem('jlpt_furigana',show?'on':'off')}
+function applyTranslation(show){body.classList.toggle('hide-trans',!show);trBtn.classList.toggle('active',show);trBtn.setAttribute('aria-pressed',String(show));trBtn.textContent=show?'한국어 뜻 ON':'한국어 뜻 OFF';localStorage.setItem('jlpt_translation',show?'on':'off')}
+function applyTheme(dark){body.classList.toggle('dark',dark);themeBtn.classList.toggle('active',dark);themeBtn.setAttribute('aria-pressed',String(dark));themeBtn.textContent=dark?'다크모드 ON':'다크모드 OFF';localStorage.setItem('jlpt_theme',dark?'dark':'light')}
 function applyScale(){scale=Math.max(.8,Math.min(1.4,scale));document.documentElement.style.setProperty('--jp-size',(15*scale)+'px');document.documentElement.style.setProperty('--ko-size',(13*scale)+'px');sizeLabel.textContent='글자 '+Math.round(scale*100)+'%';localStorage.setItem('jlpt_font_scale',scale)}
 furBtn.onclick=()=>applyFurigana(body.classList.contains('hide-furigana'));
 trBtn.onclick=()=>applyTranslation(body.classList.contains('hide-trans'));
 themeBtn.onclick=()=>applyTheme(!body.classList.contains('dark'));
 downBtn.onclick=()=>{scale-=.1;applyScale()};
 upBtn.onclick=()=>{scale+=.1;applyScale()};
-document.getElementById('showAllAnswers').onclick=()=>answers.forEach(x=>x.open=true);
-document.getElementById('hideAllAnswers').onclick=()=>answers.forEach(x=>x.open=false);
+document.getElementById('showAllAnswers').onclick=()=>answers().forEach(x=>x.open=true);
+document.getElementById('hideAllAnswers').onclick=()=>answers().forEach(x=>x.open=false);
 applyFurigana(localStorage.getItem('jlpt_furigana')!=='off');
 applyTranslation(localStorage.getItem('jlpt_translation')!=='off');
 applyTheme(localStorage.getItem('jlpt_theme')==='dark');
 applyScale();
 </script>
+<script src="collections.js"></script>
 </body></html>
